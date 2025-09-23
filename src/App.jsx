@@ -55,12 +55,17 @@ export default function App() {
   t={t}
   EXPOSURES={o.EXPOSURES}
   ANIMAL_OPTIONS={o.ANIMAL_OPTIONS}
+  PRIOR_VAC={o.PRIOR_VAC}                       // << เพิ่ม
   todayISO={s.todayISO}
   yesterdayISO={s.yesterdayISO}
   exposureCat={s.exposureCat}
   setExposureCat={s.setExposureCat}
   animalType={s.animalType}
   setAnimalType={s.setAnimalType}
+  priorVaccination={s.priorVaccination}         // << เพิ่ม
+  setPriorVaccination={s.setPriorVaccination}   // << เพิ่ม
+  immunocompromised={s.immunocompromised}       // << เพิ่ม
+  setImmunocompromised={s.setImmunocompromised} // << เพิ่ม
   expMode={s.expMode}
   setExpMode={s.setExpMode}
   exposureDate={s.exposureDate}
@@ -69,9 +74,8 @@ export default function App() {
   setStartMode={s.setStartMode}
   startDatePreview={startDatePreview}
   onConfirm={() => s.setConfirmedA(true)}
-  confirmed={s.confirmedA}
-  onResetConfirm={() => s.setConfirmedA(false)}
 />
+
 
 
 

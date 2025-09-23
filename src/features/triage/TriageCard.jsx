@@ -7,42 +7,39 @@ export default function TriageCard({
   t,
   EXPOSURES,
   ANIMAL_OPTIONS,
+  PRIOR_VAC,                          // << เพิ่มรับตัวเลือกวัคซีน
   todayISO,
   yesterdayISO,
   exposureCat, setExposureCat,
   animalType, setAnimalType,
+  priorVaccination, setPriorVaccination,   // << เพิ่ม state วัคซีน
+  immunocompromised, setImmunocompromised, // << เพิ่ม state กดภูมิ
   expMode, setExpMode,
   exposureDate, setExposureDate,
   startMode, setStartMode,
   startDatePreview,
-  onConfirm,         // เรียกเมื่อผู้ใช้กดปุ่มยืนยัน
-  confirmed,         // true = กดแล้ว ให้ปุ่มดำค้าง
-  onResetConfirm,    // เรียกรีเซ็ตสถานะเมื่อมีการเลือกใหม่
+  onConfirm,
 }) {
-  // ถ้าเปลี่ยนกลุ่ม ให้รีเซ็ตสถานะยืนยัน
-  const handleSetExposure = (val) => {
-    if (onResetConfirm) onResetConfirm();
-    setExposureCat(val);
-  };
-
   return (
     <Card
       title={t("sections.triageTitle")}
       subtitle={t("sections.triageSubtitle")}
       icon="🐾"
     >
-      {/* เผื่อพื้นที่ให้แถบปุ่ม sticky อยู่ในกรอบการ์ดเสมอ */}
+      {/* บังคับให้การ์ดสูงพอและเว้นที่ให้แถบปุ่ม sticky */}
       <div className="grid gap-6 pb-16">
+        {/* ประเภทการสัมผัส */}
         <div>
           <p className="font-medium mb-2">{t("fields.exposureType")}</p>
           <RadioList
             name="expo"
             value={exposureCat}
-            onChange={handleSetExposure}
+            onChange={setExposureCat}
             options={EXPOSURES}
           />
         </div>
 
+        {/* ชนิดสัตว์ */}
         <div>
           <p className="font-medium mb-2">{t("fields.animalType")}</p>
           <RadioList
@@ -53,6 +50,7 @@ export default function TriageCard({
           />
         </div>
 
+        {/* วันที่สัมผัส + ตั้ง Day 0 */}
         <div className="grid sm:grid-cols-2 gap-4">
           <SegmentedDate
             label={t("fields.exposureDate")}
@@ -93,17 +91,40 @@ export default function TriageCard({
             {startDatePreview.customInput}
             {startDatePreview.hint}
             <div className="mt-2 rounded-xl border border-red-200 bg-red-50 text-red-700 p-3 text-xs sm:text-sm">
-  <strong className="font-semibold">
-    {t("messages.warning").split(":")[0]}:
-  </strong>{" "}
-  {t("messages.warning").split(":").slice(1).join(":").trim()}
-</div>
+              <strong className="font-semibold">
+                {t("messages.warning").split(":")[0]}:
+              </strong>{" "}
+              {t("messages.warning").split(":").slice(1).join(":").trim()}
+            </div>
+          </div>
+        </div>
 
+        {/* ประวัติวัคซีน + ภูมิคุ้มกัน */}
+        <div className="grid sm:grid-cols-2 gap-4">
+          <div>
+            <p className="font-medium mb-2">{t("fields.priorVac")}</p>
+            <RadioList
+              name="prior"
+              value={priorVaccination}
+              onChange={setPriorVaccination}
+              options={PRIOR_VAC} // never / <=6m / >6m
+            />
+          </div>
+
+          <div className="sm:pt-6">
+            <label className="inline-flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={immunocompromised}
+                onChange={(e) => setImmunocompromised(e.target.checked)}
+              />
+              {t("fields.immunocomp")}
+            </label>
           </div>
         </div>
       </div>
 
-      {/* แถบปุ่ม sticky ที่ก้นการ์ด */}
+      {/* แถบปุ่ม sticky ติดขอบล่างการ์ด มองเห็นเสมอ */}
       <div className="sticky bottom-3 left-0 right-0 z-10">
         <div className="mx-[-1.25rem] sm:mx-[-1.5rem] rounded-b-2xl">
           <div
@@ -115,11 +136,9 @@ export default function TriageCard({
               onClick={onConfirm}
               disabled={!exposureCat}
               className={`px-4 py-2 rounded-xl transition-colors ${
-                !exposureCat
-                  ? "bg-slate-100 text-slate-400 cursor-not-allowed"
-                  : confirmed
-                  ? "bg-black text-white"
-                  : "bg-slate-400 hover:bg-slate-500 text-white"
+                exposureCat
+                  ? "bg-slate-200 text-slate-800 hover:bg-slate-300 active:bg-slate-900 active:text-white"
+                  : "bg-slate-100 text-slate-400 cursor-not-allowed"
               }`}
             >
               {t("ui.next")}
@@ -132,7 +151,7 @@ export default function TriageCard({
                     ? "bg-emerald-50 text-emerald-800 border-emerald-200"
                     : exposureCat === "2"
                     ? "bg-amber-50 text-amber-900 border-amber-200"
-                    : "bg-rabies-50 text-rabies-900 border-rabies-200"
+                    : "bg-red-50 text-red-700 border-red-200"
                 }`}
               >
                 {t("fields.group", { n: exposureCat })}
