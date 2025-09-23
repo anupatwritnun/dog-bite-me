@@ -1,10 +1,14 @@
 import React, { createContext, useCallback, useContext, useState } from "react";
 
-// Supported languages
+// ใช้ใน App กับ LangSwitcher
 export const SUPPORTED_LOCALES = ["th", "en", "vi", "km", "lo", "my"];
 
+// ids ที่ใช้สร้างออปชันแบบ i18n ในหน้า Triage
+export const EXPO_IDS = ["1", "2", "3"];
+export const OBS_IDS = ["yes", "no", "unknown"];
+export const PRIOR_IDS = ["never", "<=6m", ">6m"];
 
-// Minimal nested-dict translations
+// dict หลัก
 const dicts = {
   th: {
     ui: {
@@ -21,22 +25,21 @@ const dicts = {
       openMap: "เปิดแผนที่ค้นหาคลินิกใกล้ฉัน",
       tel1422: "โทร 1422 (กรมควบคุมโรค)",
       downloadICS: "ดาวน์โหลดไฟล์ .ics",
+      calendarSubtitle:
+        "สามารถโหลดไฟล์แล้วกดเปิดกับ Google Calendar จะแอดให้อัตโนมัติ",
     },
     sections: {
-      triageTitle: "คัดกรองรวม",
-      triageSubtitle: "ตอบไม่กี่ข้อเพื่อได้คำแนะนำที่ตรงกับแนวทางสถานเสาวภา",
+      triageTitle: "คัดกรอง", // เดิม 'คัดกรองรวม'
+      triageSubtitle: "ตอบไม่กี่ข้อเพื่อได้คำแนะนำที่ตรงกับแนวทาง",
       washTitle: "ล้างแผลและดูแลทันที",
-      planTitle: "แผนวัคซีนและ RIG",
+      planTitle: "การฉีดวัคซีน", // เดิม 'แผนวัคซีนและ RIG'
       calendarTitle: "ตัวคำนวณนัด (.ics)",
-      hospSummary: "ใบสรุปสำหรับโรงพยาบาล",
+      hospSummary: "ใบสรุปสำหรับไปหาหมอ", // เดิม 'ใบสรุปสำหรับโรงพยาบาล'
       service: "แผนที่ / ช่องทางรับบริการ",
       refs: "อ้างอิง (สรุป)",
     },
-    app: {
-  subtitle: "เช็กความเสี่ยงพิษสุนัขบ้า และแนวทางเบื้องต้น", // TH
-},
     fields: {
-      exposureType: "ประเภทการสัมผัส",
+      exposureType: "เลือกประเภทการสัมผัส", // เดิม 'ประเภทการสัมผัส'
       animalType: "ชนิดสัตว์",
       exposureDate: "วันถูกกัด/ข่วน",
       startDay0: "จะเริ่มฉีดวันไหน (Day 0)",
@@ -90,6 +93,7 @@ const dicts = {
       bat: "ค้างคาว",
       monkey: "ลิง",
       non_mammal: "สัตว์ไม่ใช่เลี้ยงลูกด้วยนม",
+      other: "สัตว์เลี้ยงลูกด้วยนม อื่นๆ เช่น ลิง หนู หมู",
     },
     refs: {
       thaiRedCross:
@@ -112,20 +116,22 @@ const dicts = {
       openMap: "Open map to find nearby clinics",
       tel1422: "Call 1422 (Department of Disease Control)",
       downloadICS: "Download .ics",
+      calendarSubtitle:
+        "Download the file and open with Google Calendar; it will be added automatically.",
     },
     sections: {
       triageTitle: "Triage",
       triageSubtitle:
-        "Answer a few questions to get guidance aligned with Thai Red Cross recommendations",
+        "Answer a few questions to get guidance aligned with recommendations",
       washTitle: "Immediate Wound Care",
-      planTitle: "Vaccine Plan & RIG",
+      planTitle: "Vaccination",
       calendarTitle: "Appointment Helper (.ics)",
-      hospSummary: "Summary for Hospital",
+      hospSummary: "Summary for doctor visit",
       service: "Map / Service Channels",
       refs: "References (brief)",
     },
     fields: {
-      exposureType: "Exposure category",
+      exposureType: "Choose exposure category",
       animalType: "Animal type",
       exposureDate: "Exposure date",
       startDay0: "Start vaccination (Day 0)",
@@ -164,9 +170,6 @@ const dicts = {
       rigNo: "Not needed",
       summaryPEPNo: "Summary: PEP not required",
     },
-    app: {
-  subtitle: "Check your rabies risk and next steps quickly", // EN
-},
     labels: {
       plan: "Vaccine plan",
       rig: "RIG",
@@ -183,6 +186,7 @@ const dicts = {
       bat: "Bat",
       monkey: "Monkey",
       non_mammal: "Non-mammal",
+      other: "Other mammals e.g. monkey, rat, pig",
     },
     refs: {
       thaiRedCross:
@@ -190,14 +194,13 @@ const dicts = {
       who: "WHO Exposure Categories I/II/III",
     },
   },
-  // Empty dicts for now. They’ll fall back to EN for missing keys.
   vi: {},
   km: {},
   lo: {},
   my: {},
 };
 
-// -------- internals --------
+// ---------- helpers ----------
 function deepGet(obj, path) {
   const parts = path.split(".");
   let cur = obj;
@@ -208,6 +211,14 @@ function deepGet(obj, path) {
   return typeof cur === "string" ? cur : undefined;
 }
 
+// แปลง id-array เป็น options พร้อม label แปลภาษา
+export function mapOptions(ids, baseKey, t) {
+  return ids.map((id) => ({
+    id,
+    label: t(`${baseKey}.${id}`),
+  }));
+}
+
 const I18nContext = createContext(null);
 
 export function I18nProvider({ children }) {
@@ -215,10 +226,7 @@ export function I18nProvider({ children }) {
 
   const t = useCallback(
     (key, vars) => {
-      const raw =
-        deepGet(dicts[lang], key) ??
-        deepGet(dicts.en, key) ??
-        key;
+      const raw = deepGet(dicts[lang], key) ?? deepGet(dicts.en, key) ?? key;
       if (!vars) return raw;
       return Object.entries(vars).reduce(
         (s, [k, v]) => s.replaceAll(`{${k}}`, String(v)),
@@ -239,19 +247,4 @@ export function useI18n() {
   const ctx = useContext(I18nContext);
   if (!ctx) throw new Error("useI18n must be used inside <I18nProvider>");
   return ctx;
-}
-
-/* ---------- helpers for clean App.jsx ---------- */
-
-// ids you reuse in multiple places, without duplicating strings in App.jsx
-export const EXPO_IDS = ["1", "2", "3"];
-export const OBS_IDS = ["yes", "no", "unknown"];
-export const PRIOR_IDS = ["never", "<=6m", ">6m"];
-
-/**
- * Build [{id,label}] option arrays from i18n keys.
- * Example: mapOptions(EXPO_IDS, "exposures", t)
- */
-export function mapOptions(ids, basePath, t) {
-  return ids.map((id) => ({ id, label: t(`${basePath}.${id}`) }));
 }
