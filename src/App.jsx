@@ -2,20 +2,26 @@ import React from "react";
 import { useI18n } from "./i18n.jsx";
 import { formatDateISO } from "./utils/format.js";
 
+// Components
 import Shell from "./components/Shell";
 import Header from "./components/Header.jsx";
 import Footer from "./components/Footer.jsx";
 
+// Features
 import TriageCard from "./features/triage/TriageCard.jsx";
 import WoundCare from "./features/wound/WoundCare.jsx";
 import VaccinePlan from "./features/plan/VaccinePlan.jsx";
 import IcsHelper from "./features/ics/IcsHelper.jsx";
 import HospitalSummary from "./features/summary/HospitalSummary.jsx";
 import Services from "./features/services/Services.jsx";
-import RefsFeedback from "./features/misc/RefsFeedback.jsx";
+import RefsFeedback from "./features/services/RefsFeedback.jsx"; // อ้างอิง + ฟอร์ม
 
+// Hooks
 import usePepState from "./hooks/usePepState.js";
 import useOptions from "./hooks/useOptions.js";
+
+// ✅ Import Vercel Analytics
+import { Analytics } from "@vercel/analytics/react";
 
 export default function App() {
   const { lang, t } = useI18n();
@@ -34,7 +40,8 @@ export default function App() {
         />
       ),
     hint:
-      s.startDate && s.startMode !== "custom" && (
+      s.startDate &&
+      s.startMode !== "custom" && (
         <p className="text-xs text-gray-500">{formatDateISO(s.startDate, lang)}</p>
       ),
   };
@@ -79,7 +86,6 @@ export default function App() {
       {s.confirmedA && (
         <>
           <WoundCare t={t} />
-
           <VaccinePlan
             t={t}
             lang={lang}
@@ -89,20 +95,18 @@ export default function App() {
             regimenChoice={s.regimenChoice}
             setRegimenChoice={s.setRegimenChoice}
             startDate={s.startDate}
-            effectiveDays={s.effectiveDays || []}
+            effectiveDays={s.effectiveDays}
             addDaysISO={s.addDaysISO}
           />
-
           {s.decision.needPEP && s.exposureCat !== "1" && (
             <IcsHelper
               t={t}
               lang={lang}
               startDate={s.startDate}
-              effectiveDays={s.effectiveDays || []}
-              scheduleDates={s.scheduleDates || []}
+              effectiveDays={s.effectiveDays}
+              scheduleDates={s.scheduleDates}
             />
           )}
-
           <HospitalSummary
             t={t}
             lang={lang}
@@ -121,13 +125,15 @@ export default function App() {
             scheduleDates={s.scheduleDates || []}
             summaryText={summaryText}
           />
-
           <Services t={t} />
           <RefsFeedback />
         </>
       )}
 
       <Footer />
+
+      {/* ✅ Analytics ตรงนี้ */}
+      <Analytics />
     </Shell>
   );
 }
