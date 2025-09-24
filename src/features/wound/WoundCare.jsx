@@ -1,7 +1,13 @@
 import React from "react";
 import Card from "../../components/Card";
+import woundImg from "../../assets/woundcare.jpg"; // <- ดึงจาก src/assets
 
 export default function WoundCare({ t }) {
+  const openFull = () => {
+    // เปิดแท็บใหม่แบบกัน window.opener
+    window.open(woundImg, "_blank", "noopener,noreferrer");
+  };
+
   return (
     <Card title={t("sections.washTitle")} icon="🩹" tone="info">
       <div className="text-sm space-y-3 bg-sky-50 border border-sky-200 rounded-xl p-4 text-sky-900">
@@ -12,19 +18,31 @@ export default function WoundCare({ t }) {
           <em> 70% alcohol</em>
         </p>
 
-        {/* รูปภาพสาธิต แทนวิดีโอ YouTube */}
-        <a href="/woundcare.jpg" target="_blank" rel="noreferrer" className="block">
+        {/* คลิกรูปเพื่อเปิดขนาดเต็มในแท็บใหม่ */}
+        <button onClick={openFull} className="block w-full text-left">
           <img
-            src="/woundcare.jpg"
+            src={woundImg}
             alt="ตัวอย่างขั้นตอนการล้างแผลจากการถูกสัตว์กัด/ข่วน"
             className="w-full max-h-[420px] object-cover rounded-xl border border-sky-200 shadow-sm"
             loading="lazy"
           />
-        </a>
+        </button>
 
-        <p className="text-xs text-sky-700">
-          คลิกรูปเพื่อเปิดขนาดเต็มในแท็บใหม่
-        </p>
+        <div className="flex gap-2">
+          <button
+            onClick={openFull}
+            className="px-3 py-1.5 text-xs rounded-md border border-sky-300 bg-white hover:bg-sky-50"
+          >
+            เปิดรูปขนาดเต็ม ↗
+          </button>
+          <a
+            href={woundImg}
+            download="woundcare.jpg"
+            className="px-3 py-1.5 text-xs rounded-md border border-slate-300 bg-white hover:bg-slate-50"
+          >
+            ดาวน์โหลดรูป
+          </a>
+        </div>
       </div>
     </Card>
   );
