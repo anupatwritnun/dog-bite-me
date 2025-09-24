@@ -3,61 +3,65 @@ import Card from "../../components/Card";
 import { addDaysISO } from "../../utils/dates";
 import { formatDateISO } from "../../utils/format";
 
-// ✨ Helper function to generate the Google Calendar URL (remains the same)
+// same helper, แค่รับ title/date ที่ถูกแปลจากข้างนอก
 const generateGoogleCalendarUrl = (event) => {
   const startDate = event.date.replace(/-/g, "");
-  const dateObj = new Date(event.date);
-  dateObj.setDate(dateObj.getDate() + 1);
-  const endDate = dateObj.toISOString().slice(0, 10).replace(/-/g, "");
+  const d = new Date(event.date);
+  d.setDate(d.getDate() + 1);
+  const endDate = d.toISOString().slice(0, 10).replace(/-/g, "");
   const encodedTitle = encodeURIComponent(event.title);
-  
   return `https://www.google.com/calendar/render?action=TEMPLATE&text=${encodedTitle}&dates=${startDate}/${endDate}`;
 };
 
-
 export default function IcsHelper({ t, lang, startDate, scheduleDates, decision }) {
+  // ฟังก์ชันเล็กๆ ไว้สร้างชื่ออีเวนต์ตามภาษา โดยไม่ต้องเพิ่มคีย์ใหม่ใน JSON
+  const doseOnly = (n) =>
+    t("labels.doseLine", { n, date: "" }).trim().replace(/—\s*$/, ""); // "Dose 1" / "เข็มที่ 1"
+
   const allEvents = useMemo(() => {
     const rabiesEvents = (scheduleDates || []).map((date, i) => ({
       key: `rabies-${i}`,
-      title: `นัดฉีดวัคซีนพิษสุนัขบ้า เข็มที่ ${i + 1}`,
-      date: date,
+      // "Rabies vaccination appointments — Dose 1"
+      title: `${t("labels.icsTitle")} — ${doseOnly(i + 1)}`,
+      date,
     }));
 
-    const tetanusEvents = (decision?.tetanus?.offsets || []).map((offset, i) => ({
+    const tetanusOffsets = decision?.tetanus?.offsets || [];
+    const tetanusEvents = tetanusOffsets.map((off, i) => ({
       key: `tetanus-${i}`,
-      title: `นัดฉีดวัคซีนบาดทะยัก เข็มที่ ${i + 1}`,
-      date: addDaysISO(startDate, offset),
+      // "Tetanus — Dose 1"
+      title: `${t("labels.tetanusPlan")} — ${doseOnly(i + 1)}`,
+      date: addDaysISO(startDate, off),
     }));
 
     return [...rabiesEvents, ...tetanusEvents];
-  }, [scheduleDates, decision, startDate]);
+  }, [scheduleDates, decision, startDate, t]);
 
   return (
-    <Card title="ตัวคำนวณนัด (.ics)" icon="🗓️">
-      {/* Smaller, grey-colored text for the subtitle */}
-      <p className="mb-4 text-sm text-gray-500">สามารถเพิ่มนัดหมายแต่ละรายการลงใน Google Calendar ได้โดยตรง</p>
-      
+    <Card title={`${t("sections.calendarTitle")}`} icon="🗓️">
+      <p className="mb-4 text-sm text-gray-500">{t("ui.calendarSubtitle")}</p>
+
       <ul className="space-y-3">
         {allEvents.map((event) => (
-          <li key={event.key} className="flex justify-between items-center bg-slate-50 p-3 rounded-lg">
+          <li
+            key={event.key}
+            className="flex justify-between items-center bg-slate-50 p-3 rounded-lg"
+          >
             <span>
               {`${event.title} — ${formatDateISO(event.date, lang)}`}
             </span>
-            
-            {/* 🔗 Link with the calendar icon */}
+
             <a
               href={generateGoogleCalendarUrl(event)}
               target="_blank"
               rel="noopener noreferrer"
-              // Removed button-like styling, just added some margin-left for spacing
-              className="ml-2" 
-              title="เพิ่มในปฏิทิน Google" // Optional: Add a tooltip on hover
+              className="ml-2"
+              title={t("ui.addToCalendar")}
             >
-              {/* Using an img tag for the icon */}
-              <img 
-                src="/icons/calendar.png" // Path relative to the `public` folder
-                alt="เพิ่มในปฏิทิน" 
-                className="w-6 h-6 inline-block" // Adjust width and height as needed
+              <img
+                src="/icons/calendar.png" // public/icons/calendar.png
+                alt={t("ui.addToCalendar")}
+                className="w-6 h-6 inline-block"
               />
             </a>
           </li>

@@ -1,0 +1,148 @@
+{
+  "header": {
+    "subtitle": "Đánh giá nguy cơ, nhận kế hoạch tiêm vắc xin và các bước chăm sóc sau khi bị cắn/xước."
+  },
+  "ui": {
+    "language": "Ngôn ngữ",
+    "thai": "Tiếng Thái",
+    "english": "Tiếng Anh",
+    "vietnamese": "Tiếng Việt",
+    "khmer": "Tiếng Khmer",
+    "lao": "Tiếng Lào",
+    "myanmar": "Tiếng Myanmar",
+    "next": "Tiếp tục",
+    "copy": "Sao chép văn bản",
+    "saveImage": "Lưu thành hình ảnh",
+    "openMap": "Mở bản đồ để tìm phòng khám gần nhất",
+    "tel1422": "Gọi 1422 (Cục Kiểm soát Bệnh tật)",
+    "downloadICS": "Tải xuống .ics",
+    "openInGCal": "Thêm vào lịch",
+    "addToCalendar": "Thêm vào lịch",
+    "calendarSubtitle": "Tải file .ics, sau đó mở bằng Google Calendar để nhập tự động",
+    "gcalNote": "Để thêm tất cả lịch hẹn cùng lúc, hãy tải file .ics và mở bằng Google Calendar. Các liên kết bên dưới thêm từng lịch hẹn riêng lẻ.",
+    "expandPrint": "Mở rộng để xem & in ↗️",
+    "print": "In",
+    "close": "Đóng",
+    "openForm": "Mở biểu mẫu"
+  },
+  "sections": {
+    "triageTitle": "Phân loại nguy cơ",
+    "triageSubtitle": "Trả lời một vài câu hỏi để nhận hướng dẫn phù hợp",
+    "washTitle": "Sơ cứu vết thương ngay",
+    "planTitle": "Tiêm vắc xin",
+    "calendarTitle": "Hỗ trợ lịch hẹn (.ics)",
+    "hospSummary": "Tóm tắt cho bác sĩ",
+    "service": "Bản đồ / Kênh dịch vụ",
+    "refs": "Tài liệu tham khảo",
+    "tetanusTitle": "Uốn ván",
+    "feedback": "Khảo sát / góp ý"
+  },
+  "feedback": {
+    "subtitle": "Hãy cho chúng tôi biết thông tin này có hữu ích không hoặc cần cải thiện gì."
+  },
+  "services": {
+    "reportWarning": "Nếu con vật có dấu hiệu bất thường, hãy báo cho thú y hoặc gọi số {phone}."
+  },
+  "tetanus": {
+    "needYes": "⚠️ Cần tiêm vắc xin uốn ván",
+    "needNo": "✅ Không cần tiêm vắc xin uốn ván",
+    "apptTitle": "Lịch hẹn tiêm uốn ván",
+    "doseLine": "Mũi {n} — {date}"
+  },
+  "wound": {
+    "text": "Rửa kỹ vết thương bằng xà phòng và nước chảy liên tục ít nhất 15 phút. Làm sạch, bôi thuốc sát trùng và đi khám để tiêm vắc xin khi cần.",
+    "openFull": "Mở ảnh đầy đủ",
+    "download": "Tải ảnh"
+  },
+  "fields": {
+    "exposureType": "Chọn loại phơi nhiễm",
+    "animalType": "Loài động vật",
+    "exposureDate": "Ngày phơi nhiễm",
+    "startDay0": "Bắt đầu tiêm (Ngày 0)",
+    "today": "Hôm nay",
+    "yesterday": "Hôm qua",
+    "tomorrow": "Ngày mai",
+    "pickDate": "Chọn ngày",
+    "priorVac": "Đã tiêm vắc xin dại trước đây",
+    "immunocomp": "Suy giảm miễn dịch",
+    "group": "Nhóm {n}",
+    "realAppt": "Lịch hẹn thực tế (bắt đầu {date})",
+    "tetanusDoses": "Số mũi uốn ván đã tiêm",
+    "tetanusRecent": "Thời gian từ lần tiêm uốn ván gần nhất"
+  },
+  "exposures": {
+    "1": "Loại 1: Chỉ chạm da lành",
+    "2": "Loại 2: Vết xước/vết trầy nhẹ",
+    "3": "Loại 3: Vết thương sâu, chảy máu, nước bọt vào mắt/miệng/vết thương"
+  },
+  "obs10d": {
+    "yes": "Có thể theo dõi động vật trong 10 ngày",
+    "no": "Không thể theo dõi",
+    "unknown": "Không rõ"
+  },
+  "prior": {
+    "never": "Chưa từng tiêm đủ phác đồ",
+    "<=6m": "Đã tiêm đủ ≤ 6 tháng",
+    ">6m": "Đã tiêm đủ > 6 tháng"
+  },
+  "tetanusDosesOptions": {
+    "0": "0 mũi (chưa từng tiêm)",
+    "1": "1 mũi",
+    "2": "2 mũi",
+    "3": "≥3 mũi (đầy đủ)"
+  },
+  "tetanusRecentOptions": {
+    "<=5y": "≤ 5 năm",
+    ">5y": "> 5 năm"
+  },
+  "messages": {
+    "cat1NoPEP": "Phơi nhiễm loại 1: Không cần tiêm vắc xin hoặc RIG",
+    "warning": "Cảnh báo: Tiêm vắc xin kịp thời giúp phòng bệnh dại 100%. Nếu đã xuất hiện triệu chứng, bệnh gần như luôn gây tử vong.",
+    "needRIGTitle": "Xem xét tiêm RIG (Loại 3)",
+    "needRIGDetail": "Tiêm quanh vết thương cùng ngày với vắc xin (Ngày 0)",
+    "rigYes": "Khuyến cáo (Loại 3)",
+    "rigNo": "Không cần",
+    "summaryPEPNo": "Tóm tắt: Không cần PEP",
+    "stopIfObs10d": "Nếu chó/mèo khỏe mạnh sau 10 ngày, bác sĩ có thể cân nhắc dừng tiêm."
+  },
+  "labels": {
+    "realAppt": "Lịch hẹn thực tế (bắt đầu {date})",
+    "plan": "Kế hoạch tiêm vắc xin",
+    "rig": "RIG",
+    "animalObs10d": "Theo dõi động vật 10 ngày",
+    "immunocompYes": "Có",
+    "immunocompNo": "Không",
+    "chooseRegimen": "Chọn phác đồ",
+    "dayLine": "Ngày {d} — {date}",
+    "icsTitle": "Lịch hẹn tiêm vắc xin dại",
+    "doseTitle": "Lịch hẹn vắc xin dại — mũi {n}",
+    "tetanusPlan": "Uốn ván",
+    "doseLine": "Mũi {n} — {date}",
+    "tetanusNone": "Không cần nhắc lại (≥3 mũi trong 5 năm)",
+    "tetanusBooster": "Tiêm nhắc 1 mũi (Td/Tdap)",
+    "tetanusSeries": "Tiêm phác đồ 0, 1, 6 tháng (Td/Tdap)"
+  },
+  "plan": {
+    "regimens": {
+      "IM_ESSEN": "IM (Essen) 5 mũi — ngày {days}",
+      "ID_TRC": "ID (TRC) 4 mũi — ngày {days}"
+    }
+  },
+  "rabies": {
+    "needYes": "⚠️ Bạn nên tiêm vắc xin dại.",
+    "needNo": "✅ Không cần tiêm vắc xin dại."
+  },
+  "animals": {
+    "dog": "Chó",
+    "cat": "Mèo",
+    "bat": "Dơi",
+    "monkey": "Khỉ",
+    "non_mammal": "Động vật không phải thú",
+    "other": "Động vật khác, ví dụ khỉ, chuột, lợn"
+  },
+  "refs": {
+    "thaiRedCross": "Viện Queen Saovabha (Hội Chữ thập đỏ Thái Lan). Hướng dẫn xử trí phơi nhiễm bệnh dại (2018)",
+    "who": "WHO Phân loại phơi nhiễm I/II/III",
+    "tetanusThai": "≥3 mũi trong 5 năm → không cần; >5 năm → nhắc 1 mũi; <3 mũi → phác đồ 0-1-6"
+  }
+}

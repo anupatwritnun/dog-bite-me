@@ -9,6 +9,7 @@ import Footer from "./components/Footer.jsx";
 import TriageCard from "./features/triage/TriageCard.jsx";
 import WoundCare from "./features/wound/WoundCare.jsx";
 import VaccinePlan from "./features/plan/VaccinePlan.jsx";
+import TetanusPlan from "./features/plan/TetanusPlan.jsx";
 import IcsHelper from "./features/ics/IcsHelper.jsx";
 import HospitalSummary from "./features/summary/HospitalSummary.jsx";
 import Services from "./features/services/Services.jsx";
@@ -56,8 +57,8 @@ export default function App() {
         EXPOSURES={o.EXPOSURES}
         ANIMAL_OPTIONS={o.ANIMAL_OPTIONS}
         PRIOR_VAC={o.PRIOR_VAC}
-        TETANUS_OPTS={o.TETANUS_OPTS}
-        TETANUS_RECENT_OPTS={o.TETANUS_RECENT_OPTS}
+        TETANUS_OPTS={o.TETANUS_OPTS}                 // << ส่งเข้าไป
+        TETANUS_RECENT_OPTS={o.TETANUS_RECENT_OPTS}   // << ส่งเข้าไป
         todayISO={s.todayISO}
         yesterdayISO={s.yesterdayISO}
         exposureCat={s.exposureCat}
@@ -99,6 +100,8 @@ export default function App() {
             addDaysISO={s.addDaysISO}
           />
 
+          <TetanusPlan t={t} lang={lang} decision={s.decision} startDate={s.startDate} />
+
           {s.decision.needPEP && s.exposureCat !== "1" && (
             <IcsHelper
               t={t}
@@ -129,12 +132,12 @@ export default function App() {
           />
 
           <Services t={t} />
-          <RefsFeedback />
+         <RefsFeedback t={t} />
         </>
       )}
 
       <Footer />
-        <Analytics />
+      <Analytics />
     </Shell>
   );
 }

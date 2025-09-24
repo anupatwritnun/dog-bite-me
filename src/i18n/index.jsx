@@ -1,14 +1,8 @@
-import React, {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+// src/i18n/index.jsx
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 
-// ------------ load JSON dicts ------------
-const modules = import.meta.glob("./i18n/lang/*.json", { eager: true });
+// Load all JSONs in /lang
+const modules = import.meta.glob("./lang/*.json", { eager: true });
 const DICTS = Object.fromEntries(
   Object.entries(modules).map(([path, mod]) => {
     const code = path.match(/\/(\w+)\.json$/)[1]; // "en","th","my",...
@@ -16,19 +10,8 @@ const DICTS = Object.fromEntries(
   })
 );
 
-// If you only shipped en/th/my for now, SUPPORTED_LOCALES will be ["en","th","my"].
-// Add more JSONs later and they appear automatically.
 export const SUPPORTED_LOCALES = Object.keys(DICTS);
 
-// ------------ keep your old option IDs (so imports elsewhere don't break) ------------
-export const EXPO_IDS = ["1", "2", "3"];
-export const OBS_IDS = ["yes", "no", "unknown"];
-export const PRIOR_IDS = ["never", "<=6m", ">6m"];
-export const TETANUS_DOSE_IDS = ["0", "1", "2", "3"]; // ห้าม ">=3"
-export const TETANUS_RECENT_IDS = ["<=5y", ">5y"];     // last booster timing
-
-
-// ------------ helpers ------------
 function normalizeLocale(code) {
   if (!code) return "en";
   const base = String(code).toLowerCase().split("-")[0];
@@ -47,26 +30,14 @@ function deepGet(obj, path) {
 
 function interpolate(str, vars) {
   if (!vars || typeof str !== "string") return str;
-  return Object.entries(vars).reduce(
-    (s, [k, v]) => s.replaceAll(`{${k}}`, String(v)),
-    str
-  );
+  return Object.entries(vars).reduce((s, [k, v]) => s.replaceAll(`{${k}}`, String(v)), str);
 }
 
-// keep your existing helper signature
-export function mapOptions(ids, baseKey, t) {
-  return ids.map((id) => ({ id, label: t(`${baseKey}.${id}`) }));
-}
-
-// ------------ context ------------
 const I18nContext = createContext(null);
 
 export function I18nProvider({ children }) {
-  // priority: ?lang= > localStorage > navigator.language
   const urlLang = new URLSearchParams(window.location.search).get("lang");
-  const initial = normalizeLocale(
-    urlLang || localStorage.getItem("locale") || navigator.language
-  );
+  const initial = normalizeLocale(urlLang || localStorage.getItem("locale") || navigator.language);
   const [lang, setLang] = useState(initial);
 
   useEffect(() => {
@@ -84,14 +55,10 @@ export function I18nProvider({ children }) {
     [dict]
   );
 
-  // dev-only warning for missing keys
   const t = useCallback(
     (key, vars) => {
       const out = tBase(key, vars);
-      if (import.meta.env.DEV && out === key) {
-        // eslint-disable-next-line no-console
-        console.warn(`[i18n] Missing key: ${key} (lang=${lang})`);
-      }
+      if (import.meta.env.DEV && out === key) console.warn(`[i18n] Missing key: ${key} (lang=${lang})`);
       return out;
     },
     [tBase, lang]
@@ -105,4 +72,9 @@ export function useI18n() {
   const ctx = useContext(I18nContext);
   if (!ctx) throw new Error("useI18n must be used inside <I18nProvider>");
   return ctx;
+}
+
+// keep your helper
+export function mapOptions(ids, baseKey, t) {
+  return ids.map((id) => ({ id, label: t(`${baseKey}.${id}`) }));
 }

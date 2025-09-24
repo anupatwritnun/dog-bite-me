@@ -1,0 +1,155 @@
+{
+  "header": {
+    "subtitle": "Assess risk, get a vaccine plan, and care steps after a bite/scratch."
+  },
+  "ui": {
+    "language": "Language",
+    "thai": "ไทย",
+    "english": "English",
+    "vietnamese": "Tiếng Việt",
+    "khmer": "Khmer",
+    "lao": "Lao",
+    "myanmar": "Myanmar",
+    "next": "Continue",
+    "copy": "Copy text",
+    "saveImage": "Save as image",
+    "openMap": "Open map to find nearby clinics",
+    "tel1422": "Call 1422 (Department of Disease Control)",
+    "downloadICS": "Download .ics",
+    "openInGCal": "Add to calendar",
+    "addToCalendar": "Add to calendar",
+    "calendarSubtitle": "Download the .ics, then open with Google Calendar to import automatically",
+    "gcalNote": "To add all visits at once, download the .ics and open it with Google Calendar. Links below add visits one by one."
+    , "expandPrint": "Expand to view & print ↗️",
+    "print": "Print",
+    "close": "Close",
+    "openForm": "Open form"
+  },
+  "sections": {
+    "triageTitle": "Triage",
+    "triageSubtitle": "Answer a few questions to get guidance aligned with recommendations",
+    "washTitle": "Immediate Wound Care",
+    "planTitle": "Vaccination",
+    "calendarTitle": "Appointment Helper (.ics)",
+    "hospSummary": "Summary for doctor visit",
+    "service": "Map / Service Channels",
+    "refs": "References (brief)",
+    "tetanusTitle": "Tetanus",
+    "feedback": "Satisfaction survey / suggestions"
+  },
+  "feedback": {
+    "subtitle": "Tell us if this was helpful or what we can improve."
+  },
+  
+  "services": {
+    "reportWarning": "If the animal shows suspicious signs, notify livestock officials or call the hotline {phone}."
+  },
+  "tetanus": {
+    "needYes": "⚠️ Tetanus vaccine required",
+    "needNo": "✅ No tetanus vaccine needed",
+    "apptTitle": "Tetanus appointments",
+    "doseLine": "Dose {n} — {date}"
+  },
+
+  "wound": {
+    "text": "Wash the wound thoroughly with soap and running water for at least 15 minutes. Clean, apply antiseptic, and see a clinician for vaccination as needed.",
+    "openFull": "Open full image",
+    "download": "Download image"
+  },
+
+  "fields": {
+    "exposureType": "Choose exposure category",
+    "animalType": "Animal type",
+    "exposureDate": "Exposure date",
+    "startDay0": "Start vaccination (Day 0)",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "tomorrow": "Tomorrow",
+    "pickDate": "Pick a date",
+    "priorVac": "Prior Rabies vaccination",
+    "immunocomp": "Immunocompromised",
+    "group": "Category {n}",
+    "realAppt": "Actual appointments (start {date})",
+    "tetanusDoses": "Number of prior tetanus doses",
+    "tetanusRecent": "Time since last tetanus dose"
+  },
+  "exposures": {
+    "1": "Cat 1: Touching intact skin only",
+    "2": "Cat 2: Minor scratches/abrasions",
+    "3": "Cat 3: Deep wounds, bleeding, saliva into eye/mouth/wound"
+  },
+  "obs10d": {
+    "yes": "Animal can be observed for 10 days",
+    "no": "Cannot be observed",
+    "unknown": "Unknown"
+  },
+  
+  "prior": {
+    "never": "Never completed a prior series",
+    "<=6m": "Completed series ≤ 6 months",
+    ">6m": "Completed series > 6 months"
+  },
+  "tetanusDosesOptions": {
+    "0": "0 dose (never received)",
+    "1": "1 dose",
+    "2": "2 doses",
+    "3": "≥3 doses (completed)"
+  },
+  "tetanusRecentOptions": {
+    "<=5y": "≤ 5 years",
+    ">5y": "> 5 years"
+  },
+  "messages": {
+    "cat1NoPEP": "Category 1 exposure: Vaccine and RIG are not required",
+    "warning": "Warning: Timely vaccination prevents rabies 100%. If symptoms develop, rabies is almost universally fatal.",
+    "needRIGTitle": "Consider RIG (Category 3)",
+    "needRIGDetail": "Infiltrate into/around all wounds on the same day as vaccine (Day 0)",
+    "rigYes": "Recommended (Cat 3)",
+    "rigNo": "Not needed",
+    "summaryPEPNo": "Summary: PEP not required" ,
+    "stopIfObs10d": "If the dog/cat remains healthy for 10 days, a clinician may consider stopping the course."
+    
+  },
+  "labels": {
+  "realAppt": "Actual appointments (start {date})",
+    "plan": "Vaccine plan",
+  "rig": "RIG",
+  "animalObs10d": "10-day animal observation",
+  "immunocompYes": "Yes",
+  "immunocompNo": "No",
+  "chooseRegimen": "Choose a regimen",
+  "dayLine": "Day {d} — {date}",
+  "icsTitle": "Rabies vaccination appointments",
+  "doseTitle": "Rabies vaccine appointment — dose {n}",
+  "tetanusPlan": "Tetanus",
+  "doseLine": "Dose {n} — {date}",
+  "tetanusNone": "No tetanus booster needed (≥3 doses within 5 years)",
+  "tetanusBooster": "Give 1 dose (Td/Tdap)",
+  "tetanusSeries": "Start series at 0, 1, 6 months (Td/Tdap)"
+},
+
+  "plan": {
+    "regimens": {
+      "IM_ESSEN": "IM (Essen) 5-dose — days {days}",
+      "ID_TRC": "ID (TRC) 4-dose — days {days}"
+    }
+  },
+
+  "rabies": {
+    "needYes": "⚠️ You should get rabies vaccine.",
+    "needNo": "✅ Rabies vaccine is not required."
+  },
+  "animals": {
+    "dog": "Dog",
+    "cat": "Cat",
+    "bat": "Bat",
+    "monkey": "Monkey",
+    "non_mammal": "Non-mammal",
+    "other": "Other mammals e.g. monkey, rat, pig"
+  },
+  "refs": {
+    "thaiRedCross": "Queen Saovabha Memorial Institute (Thai Red Cross). Rabies exposure management guideline (2018)",
+    "who": "WHO Exposure Categories I/II/III",
+    "tetanusThai": "≥3 prior doses within 5 years → none; >5 years → single booster; <3 doses → 0-1-6 series"
+  }
+}
