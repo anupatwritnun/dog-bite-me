@@ -85,7 +85,7 @@ export default function App() {
 
       {s.confirmedA && (
         <>
-          <WoundCare t={t} />
+          <WoundCare t={t} lang={lang} />
 
           <VaccinePlan
             t={t}
