@@ -10,16 +10,22 @@ export default function IcsHelper({
   effectiveDays = [],
   scheduleDates = [],
 }) {
-  // Build a Google Calendar all-day event link for the first date
-  const firstISO = scheduleDates?.[0];
+  // สร้างชื่ออีเวนต์แบบ "นัดฉีดวัคซีนพิษสุนัขบ้า เข็มที่ X"
+  const doseTitle = (i) =>
+    (t("labels.doseTitle", { n: i + 1 }) ||
+      `นัดฉีดวัคซีนพิษสุนัขบ้า เข็มที่ ${i + 1}`);
+
+  // Google Calendar link (all-day)
   const toGCalDay = (iso) => iso?.replaceAll("-", ""); // YYYYMMDD
-  const gcalHref = firstISO
-    ? `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(
-        t("labels.icsTitle")
-      )}&dates=${toGCalDay(firstISO)}/${toGCalDay(firstISO)}&details=${encodeURIComponent(
-        "PEP schedule"
-      )}&sf=true&output=xml`
-    : null;
+  const gcalHrefFor = (iso, i) =>
+    `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(
+      doseTitle(i)
+    )}&dates=${toGCalDay(iso)}/${toGCalDay(iso)}&sf=true&output=xml`;
+
+  // รายชื่อ title สำหรับแต่ละเข็ม เพื่อใส่ไปกับ .ics
+  const titlesPerDate = scheduleDates.map((_, i) => doseTitle(i));
+
+  const addToCalLabel = t("ui.addToCalendar") || "เพิ่มในปฏิทิน";
 
   return (
     <Card
@@ -29,41 +35,60 @@ export default function IcsHelper({
     >
       {startDate ? (
         <>
-          <ul className="list-disc pl-5 text-sm mt-2">
+          {/* รายการวันนัด + ไอคอนเพิ่มลง GCal ทีละนัด */}
+          <ul className="pl-5 text-sm mt-2 space-y-1">
             {effectiveDays.map((d, i) => {
               const iso = scheduleDates[i] || startDate; // fallback
               return (
-                <li key={i}>
-                  {t("labels.dayLine", { d, date: formatDateISO(iso, lang) })}
+                <li key={i} className="list-disc flex items-center gap-2">
+                  <span>
+                    {t("labels.dayLine", { d, date: formatDateISO(iso, lang) })}
+                  </span>
+                  <a
+                    href={gcalHrefFor(iso, i)}
+                    target="_blank"
+                    rel="noreferrer"
+                    title={addToCalLabel}
+                    aria-label={addToCalLabel}
+                    className="inline-flex items-center justify-center w-7 h-7 rounded-md border border-slate-200 bg-white hover:bg-slate-50"
+                  >
+                    <img
+                      src="/icons/calendar.png"   // ใส่ไอคอนไว้ที่ public/icons/calendar.png
+                      alt={addToCalLabel}
+                      className="w-4 h-4"
+                    />
+                  </a>
                 </li>
               );
             })}
           </ul>
 
+          {/* ปุ่มเพิ่มทุกนัดแบบ .ics (ใช้ชื่อแยกตามเข็ม) */}
           <div className="mt-3 flex items-center gap-3">
             <button
               className="px-4 py-2 rounded-xl bg-slate-900 text-white"
               onClick={() =>
                 scheduleDates.length &&
-                makeICS(t("labels.icsTitle"), scheduleDates)
+                makeICS(
+                  t("labels.icsTitle") || "นัดฉีดวัคซีนพิษสุนัขบ้า",
+                  scheduleDates,
+                  titlesPerDate
+                )
               }
             >
               {t("ui.downloadICS")}
             </button>
-
-            {gcalHref && (
-              <a
-                href={gcalHref}
-                target="_blank"
-                rel="noreferrer"
-                className="text-sm underline text-slate-700 hover:text-slate-900"
-                aria-label="Open in Google Calendar"
-                title="Open in Google Calendar"
-              >
-                {t("ui.openInGCal") || "Open in Google Calendar"}
-              </a>
-            )}
           </div>
+
+          {/* ข้อความอธิบายสั้นตามที่ขอ */}
+          <p className="mt-2 text-xs text-slate-600">
+            ต้องการเพิ่มทุกนัดในครั้งเดียว ให้ดาวน์โหลดไฟล์ .ics แล้วเปิดด้วย Google
+            Calendar (ด้านบน) <span className="whitespace-nowrap">
+            ลิงก์ไอคอน{" "}
+            <img src="/icons/calendar.png" alt="" className="inline w-4 h-4 -mt-0.5" />
+            </span>{" "}
+            หลังแต่ละวันเป็นการเพิ่มทีละนัด
+          </p>
         </>
       ) : (
         <p className="text-sm text-slate-600">
