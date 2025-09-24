@@ -1,100 +1,68 @@
-import React from "react";
+import React, { useMemo } from "react";
 import Card from "../../components/Card";
-import { formatDateISO } from "../../utils/format.js";
-import { makeICS } from "../../utils/ics.js";
+import { addDaysISO } from "../../utils/dates";
+import { formatDateISO } from "../../utils/format";
 
-export default function IcsHelper({
-  t,
-  lang,
-  startDate,
-  effectiveDays = [],
-  scheduleDates = [],
-}) {
-  // สร้างชื่ออีเวนต์แบบ "นัดฉีดวัคซีนพิษสุนัขบ้า เข็มที่ X"
-  const doseTitle = (i) =>
-    (t("labels.doseTitle", { n: i + 1 }) ||
-      `นัดฉีดวัคซีนพิษสุนัขบ้า เข็มที่ ${i + 1}`);
+// ✨ Helper function to generate the Google Calendar URL (remains the same)
+const generateGoogleCalendarUrl = (event) => {
+  const startDate = event.date.replace(/-/g, "");
+  const dateObj = new Date(event.date);
+  dateObj.setDate(dateObj.getDate() + 1);
+  const endDate = dateObj.toISOString().slice(0, 10).replace(/-/g, "");
+  const encodedTitle = encodeURIComponent(event.title);
+  
+  return `https://www.google.com/calendar/render?action=TEMPLATE&text=${encodedTitle}&dates=${startDate}/${endDate}`;
+};
 
-  // Google Calendar link (all-day)
-  const toGCalDay = (iso) => iso?.replaceAll("-", ""); // YYYYMMDD
-  const gcalHrefFor = (iso, i) =>
-    `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(
-      doseTitle(i)
-    )}&dates=${toGCalDay(iso)}/${toGCalDay(iso)}&sf=true&output=xml`;
 
-  // รายชื่อ title สำหรับแต่ละเข็ม เพื่อใส่ไปกับ .ics
-  const titlesPerDate = scheduleDates.map((_, i) => doseTitle(i));
+export default function IcsHelper({ t, lang, startDate, scheduleDates, decision }) {
+  const allEvents = useMemo(() => {
+    const rabiesEvents = (scheduleDates || []).map((date, i) => ({
+      key: `rabies-${i}`,
+      title: `นัดฉีดวัคซีนพิษสุนัขบ้า เข็มที่ ${i + 1}`,
+      date: date,
+    }));
 
-  const addToCalLabel = t("ui.addToCalendar") || "เพิ่มในปฏิทิน";
+    const tetanusEvents = (decision?.tetanus?.offsets || []).map((offset, i) => ({
+      key: `tetanus-${i}`,
+      title: `นัดฉีดวัคซีนบาดทะยัก เข็มที่ ${i + 1}`,
+      date: addDaysISO(startDate, offset),
+    }));
+
+    return [...rabiesEvents, ...tetanusEvents];
+  }, [scheduleDates, decision, startDate]);
 
   return (
-    <Card
-      title={t("sections.calendarTitle")}
-      subtitle={t("ui.calendarSubtitle")}
-      icon="📅"
-    >
-      {startDate ? (
-        <>
-          {/* รายการวันนัด + ไอคอนเพิ่มลง GCal ทีละนัด */}
-          <ul className="pl-5 text-sm mt-2 space-y-1">
-            {effectiveDays.map((d, i) => {
-              const iso = scheduleDates[i] || startDate; // fallback
-              return (
-                <li key={i} className="list-disc flex items-center gap-2">
-                  <span>
-                    {t("labels.dayLine", { d, date: formatDateISO(iso, lang) })}
-                  </span>
-                  <a
-                    href={gcalHrefFor(iso, i)}
-                    target="_blank"
-                    rel="noreferrer"
-                    title={addToCalLabel}
-                    aria-label={addToCalLabel}
-                    className="inline-flex items-center justify-center w-7 h-7 rounded-md border border-slate-200 bg-white hover:bg-slate-50"
-                  >
-                    <img
-                      src="/icons/calendar.png"   // ใส่ไอคอนไว้ที่ public/icons/calendar.png
-                      alt={addToCalLabel}
-                      className="w-4 h-4"
-                    />
-                  </a>
-                </li>
-              );
-            })}
-          </ul>
-
-          {/* ปุ่มเพิ่มทุกนัดแบบ .ics (ใช้ชื่อแยกตามเข็ม) */}
-          <div className="mt-3 flex items-center gap-3">
-            <button
-              className="px-4 py-2 rounded-xl bg-slate-900 text-white"
-              onClick={() =>
-                scheduleDates.length &&
-                makeICS(
-                  t("labels.icsTitle") || "นัดฉีดวัคซีนพิษสุนัขบ้า",
-                  scheduleDates,
-                  titlesPerDate
-                )
-              }
+    <Card title="ตัวคำนวณนัด (.ics)" icon="🗓️">
+      {/* Smaller, grey-colored text for the subtitle */}
+      <p className="mb-4 text-sm text-gray-500">สามารถเพิ่มนัดหมายแต่ละรายการลงใน Google Calendar ได้โดยตรง</p>
+      
+      <ul className="space-y-3">
+        {allEvents.map((event) => (
+          <li key={event.key} className="flex justify-between items-center bg-slate-50 p-3 rounded-lg">
+            <span>
+              {`${event.title} — ${formatDateISO(event.date, lang)}`}
+            </span>
+            
+            {/* 🔗 Link with the calendar icon */}
+            <a
+              href={generateGoogleCalendarUrl(event)}
+              target="_blank"
+              rel="noopener noreferrer"
+              // Removed button-like styling, just added some margin-left for spacing
+              className="ml-2" 
+              title="เพิ่มในปฏิทิน Google" // Optional: Add a tooltip on hover
             >
-              {t("ui.downloadICS")}
-            </button>
-          </div>
-
-          {/* ข้อความอธิบายสั้นตามที่ขอ */}
-          <p className="mt-2 text-xs text-slate-600">
-            ต้องการเพิ่มทุกนัดในครั้งเดียว ให้ดาวน์โหลดไฟล์ .ics แล้วเปิดด้วย Google
-            Calendar (ด้านบน) <span className="whitespace-nowrap">
-            ลิงก์ไอคอน{" "}
-            <img src="/icons/calendar.png" alt="" className="inline w-4 h-4 -mt-0.5" />
-            </span>{" "}
-            หลังแต่ละวันเป็นการเพิ่มทีละนัด
-          </p>
-        </>
-      ) : (
-        <p className="text-sm text-slate-600">
-          ตั้งวันเริ่มฉีด (Day 0) ด้านบนเพื่อคำนวณวันนัด
-        </p>
-      )}
+              {/* Using an img tag for the icon */}
+              <img 
+                src="/icons/calendar.png" // Path relative to the `public` folder
+                alt="เพิ่มในปฏิทิน" 
+                className="w-6 h-6 inline-block" // Adjust width and height as needed
+              />
+            </a>
+          </li>
+        ))}
+      </ul>
     </Card>
   );
 }

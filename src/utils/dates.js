@@ -31,3 +31,12 @@ export function addDaysISO(baseISO, days) {
   const d = new Date(b.getFullYear(), b.getMonth(), b.getDate() + days, 9, 0, 0);
   return d.toISOString();
 }
+
+// เพิ่มท้ายไฟล์
+export function yearsBetween(dateISO, refISO = new Date().toISOString().slice(0,10)) {
+  if (!dateISO) return null;
+  const a = new Date(dateISO);
+  const b = new Date(refISO);
+  const ms = b - a;
+  return ms > 0 ? ms / (1000 * 60 * 60 * 24 * 365.25) : 0;
+}

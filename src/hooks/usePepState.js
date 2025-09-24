@@ -4,12 +4,16 @@ import { decide } from "../logic/decision";
 import { formatDateISO } from "../utils/format";
 
 export default function usePepState(t, lang) {
-  // Triaging inputs
+  // Inputs
   const [exposureCat, setExposureCat] = useState("");
   const [animalType, setAnimalType] = useState("dog");
   const [animalObservable10d, setAnimalObservable10d] = useState("yes");
   const [priorVaccination, setPriorVaccination] = useState("never");
   const [immunocompromised, setImmunocompromised] = useState(false);
+
+  // Tetanus inputs (ยังไม่ใช้คำนวนในที่นี้ แตะต่อ logic ได้)
+  const [tetanusDoses, setTetanusDoses] = useState(">=3");
+  const [tetanusRecent, setTetanusRecent] = useState("<5y");
 
   // Dates
   const [expMode, setExpMode] = useState("today");
@@ -17,37 +21,52 @@ export default function usePepState(t, lang) {
   const [startMode, setStartMode] = useState("same"); // same | tomorrow | custom
   const [startDate, setStartDate] = useState(todayISO());
 
-  // Flow
-  const [confirmedA, setConfirmedA] = useState(false);
-
   useEffect(() => {
     if (startMode === "same") setStartDate(exposureDate);
     else if (startMode === "tomorrow") setStartDate(tomorrowISO());
   }, [startMode, exposureDate]);
 
-  const regimenDefault = "IM_ESSEN"; // fallback id
+  // Flow
+  const [confirmedA, setConfirmedA] = useState(false);
+
+  // User-chosen regimen (IM/ID)
   const [regimenChoice, setRegimenChoice] = useState(null);
 
-  // decision
-  const state = useMemo(() => ({
-    exposureCat,
-    animalType,
-    animalObservable10d,
-    priorVaccination,
-    immunocompromised,
-    exposureDate,
-    startDate,
-    regimenChoice,
-  }), [
-    exposureCat, animalType, animalObservable10d, priorVaccination,
-    immunocompromised, exposureDate, startDate, regimenChoice
-  ]);
+  // Decision input snapshot
+  const state = useMemo(
+    () => ({
+      exposureCat,
+      animalType,
+      animalObservable10d,
+      priorVaccination,
+      immunocompromised,
+      exposureDate,
+      startDate,
+      tetanusDoses,
+      tetanusRecent,
+    }),
+    [
+      exposureCat,
+      animalType,
+      animalObservable10d,
+      priorVaccination,
+      immunocompromised,
+      exposureDate,
+      startDate,
+      tetanusDoses,
+      tetanusRecent,
+    ]
+  );
 
   const decision = useMemo(() => decide(state), [JSON.stringify(state)]);
-  const effectiveRegimen = decision.regimen ?? regimenChoice;
-  const effectiveDays = effectiveRegimen?.days ?? decision.regimen?.days ?? [];
+
+  // Resolve regimen to display/use
+  const effectiveRegimen =
+    regimenChoice || decision.regimen || decision.suggestedRegimen || null;
+
+  const effectiveDays = effectiveRegimen?.days || [];
   const scheduleDates = useMemo(
-    () => (effectiveDays || []).map(d => addDaysISO(startDate, d)).filter(Boolean),
+    () => (effectiveDays || []).map((d) => addDaysISO(startDate, d)).filter(Boolean),
     [effectiveDays, startDate]
   );
 
@@ -62,7 +81,7 @@ export default function usePepState(t, lang) {
     if (!decision.needPEP) {
       lines.push(t("messages.summaryPEPNo"));
     } else {
-      const planLabel = decision.regimen?.label || effectiveRegimen?.label || "";
+      const planLabel = effectiveRegimen?.label || decision.regimen?.label || decision.suggestedRegimen?.label || "";
       lines.push(`${t("labels.plan")}: ${planLabel}`);
       lines.push(`${t("labels.rig")}: ${decision.needRIG ? t("messages.rigYes") : t("messages.rigNo")}`);
       if (startDate && scheduleDates.length) {
@@ -83,6 +102,8 @@ export default function usePepState(t, lang) {
     animalObservable10d, setAnimalObservable10d,
     priorVaccination, setPriorVaccination,
     immunocompromised, setImmunocompromised,
+    tetanusDoses, setTetanusDoses,
+    tetanusRecent, setTetanusRecent,
     expMode, setExpMode,
     exposureDate, setExposureDate,
     startMode, setStartMode,
@@ -91,7 +112,7 @@ export default function usePepState(t, lang) {
     regimenChoice, setRegimenChoice,
 
     // derived
-    decision, effectiveDays, scheduleDates,
+    decision, effectiveRegimen, effectiveDays, scheduleDates,
 
     // utils
     todayISO, yesterdayISO, tomorrowISO, addDaysISO, buildSummary,

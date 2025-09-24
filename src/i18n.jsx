@@ -1,16 +1,21 @@
 import React, { createContext, useCallback, useContext, useState } from "react";
 
-// ใช้ใน App กับ LangSwitcher
+// Locales
 export const SUPPORTED_LOCALES = ["th", "en", "vi", "km", "lo", "my"];
 
-// ids ที่ใช้สร้างออปชันแบบ i18n ในหน้า Triage
+// IDs for options
 export const EXPO_IDS = ["1", "2", "3"];
 export const OBS_IDS = ["yes", "no", "unknown"];
 export const PRIOR_IDS = ["never", "<=6m", ">6m"];
+export const TETANUS_DOSE_IDS = ["0", "1", "2", "3"];   // 3 = ≥3 doses
+export const TETANUS_RECENT_IDS = ["<5y", ">5y"];        // last booster timing
 
-// dict หลัก
 const dicts = {
   th: {
+    header: {
+      subtitle:
+        "ช่วยประเมินความเสี่ยง วางแผนวัคซีน และขั้นตอนดูแลเมื่อถูกสัตว์กัด/ข่วน",
+    },
     ui: {
       language: "ภาษา",
       thai: "ไทย",
@@ -25,32 +30,39 @@ const dicts = {
       openMap: "เปิดแผนที่ค้นหาคลินิกใกล้ฉัน",
       tel1422: "โทร 1422 (กรมควบคุมโรค)",
       downloadICS: "ดาวน์โหลดไฟล์ .ics",
+      openInGCal: "เพิ่มในปฏิทิน",
+      addToCalendar: "เพิ่มในปฏิทิน",
       calendarSubtitle:
-        "สามารถโหลดไฟล์แล้วกดเปิดกับ Google Calendar จะแอดให้อัตโนมัติ",
+        "สามารถโหลดไฟล์แล้วกดเปิดกับ Google Calendar จะเพิ่มนัดให้อัตโนมัติ",
+      gcalNote:
+        "ต้องการเพิ่มทุกนัดในครั้งเดียว ให้ดาวน์โหลดไฟล์ .ics แล้วเปิดด้วย Google Calendar (ด้านบน). ลิงก์ด้านล่างเป็นการเพิ่มทีละนัด",
     },
     sections: {
-      triageTitle: "คัดกรอง", // เดิม 'คัดกรองรวม'
+      triageTitle: "คัดกรอง",
       triageSubtitle: "ตอบไม่กี่ข้อเพื่อได้คำแนะนำที่ตรงกับแนวทาง",
       washTitle: "ล้างแผลและดูแลทันที",
-      planTitle: "การฉีดวัคซีน", // เดิม 'แผนวัคซีนและ RIG'
+      planTitle: "การฉีดวัคซีนพิษสุนัขบ้า",
       calendarTitle: "ตัวคำนวณนัด (.ics)",
-      hospSummary: "ใบสรุปสำหรับไปหาหมอ", // เดิม 'ใบสรุปสำหรับโรงพยาบาล'
+      hospSummary: "ใบสรุปสำหรับไปหาหมอ",
       service: "แผนที่ / ช่องทางรับบริการ",
       refs: "อ้างอิง (สรุป)",
+      tetanusTitle: "วัคซีนบาดทะยัก",
     },
     fields: {
-      exposureType: "เลือกประเภทการสัมผัส", // เดิม 'ประเภทการสัมผัส'
+      exposureType: "เลือกประเภทการสัมผัส",
       animalType: "ชนิดสัตว์",
       exposureDate: "วันถูกกัด/ข่วน",
-      startDay0: "จะเริ่มฉีดวันไหน (Day 0)",
+      startDay0: "จะเริ่มฉีดวันไหน",
       today: "วันนี้",
       yesterday: "เมื่อวาน",
       tomorrow: "พรุ่งนี้",
       pickDate: "เลือกวันที่",
-      priorVac: "ประวัติวัคซีนเดิม",
+      priorVac: "ประวัติการฉีดวัคซีนพิษสุนัขบ้า",
       immunocomp: "มีโรค/ยาที่กดภูมิ",
       group: "กลุ่มที่ {n}",
       realAppt: "วันนัดจริง (เริ่ม {date})",
+      tetanusDoses: "จำนวนเข็มบาดทะยักที่เคยได้รับ",
+      tetanusRecent: "วัคซีนบาดทะยักล่าสุด",
     },
     exposures: {
       "1": "กลุ่มที่ 1: แค่สัมผัส ผิวปกติ ไม่มีแผล",
@@ -67,12 +79,23 @@ const dicts = {
       "<=6m": "เคยฉีดครบ ≤ 6 เดือน",
       ">6m": "เคยฉีดครบ > 6 เดือน",
     },
+    tetanusDosesOptions: {
+      "0": "0 เข็ม (ไม่เคยได้)",
+      "1": "1 เข็ม",
+      "2": "2 เข็ม",
+      "3": "ครบ ≥ 3 เข็ม",
+    },
+    tetanusRecentOptions: {
+      "<5y": "น้อยกว่า 5 ปี",
+      ">5y": "มากกว่า 5 ปี",
+    },
     messages: {
       cat1NoPEP: "การสัมผัสกลุ่มที่ 1: ไม่จำเป็นต้องฉีดวัคซีนหรือ RIG",
       warning:
         "คำเตือน: ฉีดเร็ว ตรงเวลา ป้องกันได้ 100% — ไม่ฉีด มีโอกาสติดเชื้อ และถ้าแสดงอาการแล้ว เสียชีวิต 100%",
       needRIGTitle: "ต้องพิจารณา RIG (Category 3)",
-      needRIGDetail: "ฉีดเข้า/รอบแผลทุกแผล ในวันเดียวกับวัคซีน (Day 0)",
+      needRIGDetail:
+        "ฉีดเข้า/รอบแผลทุกแผล ในวันเดียวกับวัคซีน (Day 0)",
       rigYes: "แนะนำ (Cat 3)",
       rigNo: "ไม่ต้อง",
       summaryPEPNo: "สรุป: ไม่ต้อง PEP",
@@ -86,6 +109,11 @@ const dicts = {
       chooseRegimen: "เลือกสูตรวัคซีน",
       dayLine: "Day {d} — {date}",
       icsTitle: "นัดฉีดวัคซีนพิษสุนัขบ้า",
+      doseTitle: "นัดฉีดวัคซีนพิษสุนัขบ้า เข็มที่ {n}",
+      tetanusPlan: "บาดทะยัก",
+      tetanusNone: "ไม่ต้องฉีดวัคซีนบาดทะยักเพิ่ม (ครบ ≥3 เข็ม และภายใน 5 ปี)",
+      tetanusBooster: "ฉีดบาดทะยัก 1 เข็ม (Td/Tdap)",
+      tetanusSeries: "ฉีดบาดทะยักครบชุด 0, 1, 6 เดือน (Td/Tdap)",
     },
     animals: {
       dog: "สุนัข",
@@ -99,9 +127,15 @@ const dicts = {
       thaiRedCross:
         "สถานเสาวภา สภากาชาดไทย. แนวทางการดูแลรักษาผู้สัมผัสโรคพิษสุนัขบ้า (พ.ศ. 2561)",
       who: "WHO Exposure Categories I/II/III",
+      tetanusThai:
+        "ครบ ≥3 เข็มและเข็มล่าสุด ≤5 ปี → ไม่ต้องฉีด; >5 ปี → กระตุ้น 1 เข็ม; <3 เข็ม → 0-1-6 เดือน",
     },
   },
   en: {
+    header: {
+      subtitle:
+        "Assess risk, get a vaccine plan, and care steps after a bite/scratch.",
+    },
     ui: {
       language: "Language",
       thai: "ไทย",
@@ -116,8 +150,12 @@ const dicts = {
       openMap: "Open map to find nearby clinics",
       tel1422: "Call 1422 (Department of Disease Control)",
       downloadICS: "Download .ics",
+      openInGCal: "Add to calendar",
+      addToCalendar: "Add to calendar",
       calendarSubtitle:
-        "Download the file and open with Google Calendar; it will be added automatically.",
+        "Download the .ics, then open with Google Calendar to import automatically",
+      gcalNote:
+        "To add all visits at once, download the .ics and open it with Google Calendar. Links below add visits one by one.",
     },
     sections: {
       triageTitle: "Triage",
@@ -129,6 +167,7 @@ const dicts = {
       hospSummary: "Summary for doctor visit",
       service: "Map / Service Channels",
       refs: "References (brief)",
+      tetanusTitle: "Tetanus",
     },
     fields: {
       exposureType: "Choose exposure category",
@@ -139,26 +178,31 @@ const dicts = {
       yesterday: "Yesterday",
       tomorrow: "Tomorrow",
       pickDate: "Pick a date",
-      priorVac: "Prior vaccination",
+      priorVac: "Prior Rabies vaccination",
       immunocomp: "Immunocompromised",
       group: "Category {n}",
       realAppt: "Actual appointments (start {date})",
+      tetanusDoses: "Number of prior tetanus doses",
+      tetanusRecent: "Time since last tetanus dose",
     },
     exposures: {
       "1": "Cat 1: Touching intact skin only",
       "2": "Cat 2: Minor scratches/abrasions",
       "3": "Cat 3: Deep wounds, bleeding, saliva into eye/mouth/wound",
     },
-    obs10d: {
-      yes: "Animal can be observed for 10 days",
-      no: "Cannot be observed",
-      unknown: "Unknown",
-    },
+    obs10d: { yes: "Animal can be observed for 10 days", no: "Cannot be observed", unknown: "Unknown" },
     prior: {
       never: "Never completed a prior series",
       "<=6m": "Completed series ≤ 6 months",
       ">6m": "Completed series > 6 months",
     },
+    tetanusDosesOptions: {
+      "0": "0 dose (never received)",
+      "1": "1 dose",
+      "2": "2 doses",
+      "3": "≥3 doses (completed)",
+    },
+    tetanusRecentOptions: { "<5y": "< 5 years", ">5y": "> 5 years" },
     messages: {
       cat1NoPEP: "Category 1 exposure: Vaccine and RIG are not required",
       warning:
@@ -179,28 +223,28 @@ const dicts = {
       chooseRegimen: "Choose a regimen",
       dayLine: "Day {d} — {date}",
       icsTitle: "Rabies vaccination appointments",
+      doseTitle: "Rabies vaccine appointment — dose {n}",
+      tetanusPlan: "Tetanus",
+      tetanusNone: "No tetanus booster needed (≥3 doses within 5 years)",
+      tetanusBooster: "Give 1 dose (Td/Tdap)",
+      tetanusSeries: "Start series at 0, 1, 6 months (Td/Tdap)",
     },
     animals: {
-      dog: "Dog",
-      cat: "Cat",
-      bat: "Bat",
-      monkey: "Monkey",
-      non_mammal: "Non-mammal",
-      other: "Other mammals e.g. monkey, rat, pig",
+      dog: "Dog", cat: "Cat", bat: "Bat", monkey: "Monkey",
+      non_mammal: "Non-mammal", other: "Other mammals e.g. monkey, rat, pig",
     },
     refs: {
       thaiRedCross:
         "Queen Saovabha Memorial Institute (Thai Red Cross). Rabies exposure management guideline (2018)",
       who: "WHO Exposure Categories I/II/III",
+      tetanusThai:
+        "≥3 prior doses within 5 years → none; >5 years → single booster; <3 doses → 0-1-6 series",
     },
   },
-  vi: {},
-  km: {},
-  lo: {},
-  my: {},
+  vi: {}, km: {}, lo: {}, my: {},
 };
 
-// ---------- helpers ----------
+// helpers
 function deepGet(obj, path) {
   const parts = path.split(".");
   let cur = obj;
@@ -211,30 +255,22 @@ function deepGet(obj, path) {
   return typeof cur === "string" ? cur : undefined;
 }
 
-// แปลง id-array เป็น options พร้อม label แปลภาษา
 export function mapOptions(ids, baseKey, t) {
-  return ids.map((id) => ({
-    id,
-    label: t(`${baseKey}.${id}`),
-  }));
+  return ids.map((id) => ({ id, label: t(`${baseKey}.${id}`) }));
 }
 
 const I18nContext = createContext(null);
 
 export function I18nProvider({ children }) {
   const [lang, setLang] = useState("th");
-
-  const t = useCallback(
-    (key, vars) => {
-      const raw = deepGet(dicts[lang], key) ?? deepGet(dicts.en, key) ?? key;
-      if (!vars) return raw;
-      return Object.entries(vars).reduce(
-        (s, [k, v]) => s.replaceAll(`{${k}}`, String(v)),
-        raw
-      );
-    },
-    [lang]
-  );
+  const t = useCallback((key, vars) => {
+    const raw = deepGet(dicts[lang], key) ?? deepGet(dicts.en, key) ?? key;
+    if (!vars) return raw;
+    return Object.entries(vars).reduce(
+      (s, [k, v]) => s.replaceAll(`{${k}}`, String(v)),
+      raw
+    );
+  }, [lang]);
 
   return (
     <I18nContext.Provider value={{ lang, setLang, t }}>
@@ -242,7 +278,6 @@ export function I18nProvider({ children }) {
     </I18nContext.Provider>
   );
 }
-
 export function useI18n() {
   const ctx = useContext(I18nContext);
   if (!ctx) throw new Error("useI18n must be used inside <I18nProvider>");

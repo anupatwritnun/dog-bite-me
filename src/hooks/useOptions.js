@@ -1,14 +1,22 @@
-import { useMemo } from "react";
-import { EXPO_IDS, OBS_IDS, PRIOR_IDS, mapOptions } from "../i18n.jsx";
-import { ANIMALS } from "../utils/animal";
+import {
+  mapOptions, EXPO_IDS, OBS_IDS, PRIOR_IDS,
+  TETANUS_DOSE_IDS, TETANUS_RECENT_IDS
+} from "../i18n";
 
 export default function useOptions(t) {
-  const EXPOSURES = useMemo(() => mapOptions(EXPO_IDS, "exposures", t), [t]);
-  const OBS_OPTIONS = useMemo(() => mapOptions(OBS_IDS, "obs10d", t), [t]);
-  const PRIOR_VAC = useMemo(() => mapOptions(PRIOR_IDS, "prior", t), [t]);
-  const ANIMAL_OPTIONS = useMemo(
-    () => ANIMALS.map(a => ({ ...a, label: t(`animals.${a.id}`) || a.label || a.id })),
-    [t]
-  );
-  return { EXPOSURES, OBS_OPTIONS, PRIOR_VAC, ANIMAL_OPTIONS };
+  return {
+    EXPOSURES: mapOptions(EXPO_IDS, "exposures", t),
+    OBS_OPTIONS: mapOptions(OBS_IDS, "obs10d", t),
+    PRIOR_VAC: mapOptions(PRIOR_IDS, "prior", t),
+    TETANUS_OPTS: mapOptions(TETANUS_DOSE_IDS, "tetanusDosesOptions", t),
+    TETANUS_RECENT_OPTS: mapOptions(TETANUS_RECENT_IDS, "tetanusRecentOptions", t),
+    ANIMAL_OPTIONS: [
+      { id: "dog", label: t("animals.dog") },
+      { id: "cat", label: t("animals.cat") },
+      { id: "bat", label: t("animals.bat") },
+      { id: "monkey", label: t("animals.monkey") },
+      { id: "other", label: t("animals.other") },
+      { id: "non_mammal", label: t("animals.non_mammal") },
+    ],
+  };
 }

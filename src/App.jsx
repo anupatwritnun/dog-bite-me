@@ -2,27 +2,23 @@ import React from "react";
 import { useI18n } from "./i18n.jsx";
 import { formatDateISO } from "./utils/format.js";
 
-// Components
 import Shell from "./components/Shell";
-import Badge from "./components/Badge";
 import Header from "./components/Header.jsx";
 import Footer from "./components/Footer.jsx";
 
-// Features
-import LangSwitcher from "./features/LangSwitcher.jsx";
 import TriageCard from "./features/triage/TriageCard.jsx";
 import WoundCare from "./features/wound/WoundCare.jsx";
 import VaccinePlan from "./features/plan/VaccinePlan.jsx";
 import IcsHelper from "./features/ics/IcsHelper.jsx";
 import HospitalSummary from "./features/summary/HospitalSummary.jsx";
 import Services from "./features/services/Services.jsx";
+import RefsFeedback from "./features/misc/RefsFeedback.jsx";
 
-// Hooks
 import usePepState from "./hooks/usePepState.js";
 import useOptions from "./hooks/useOptions.js";
 
 export default function App() {
-  const { lang, setLang, t } = useI18n();
+  const { lang, t } = useI18n();
   const o = useOptions(t);
   const s = usePepState(t, lang);
 
@@ -38,8 +34,7 @@ export default function App() {
         />
       ),
     hint:
-      s.startDate &&
-      s.startMode !== "custom" && (
+      s.startDate && s.startMode !== "custom" && (
         <p className="text-xs text-gray-500">{formatDateISO(s.startDate, lang)}</p>
       ),
   };
@@ -48,40 +43,43 @@ export default function App() {
 
   return (
     <Shell>
-      <LangSwitcher lang={lang} setLang={setLang} label={t("ui.language")} />
       <Header />
 
-     <TriageCard
-  t={t}
-  EXPOSURES={o.EXPOSURES}
-  ANIMAL_OPTIONS={o.ANIMAL_OPTIONS}
-  PRIOR_VAC={o.PRIOR_VAC}                       // << เพิ่ม
-  todayISO={s.todayISO}
-  yesterdayISO={s.yesterdayISO}
-  exposureCat={s.exposureCat}
-  setExposureCat={s.setExposureCat}
-  animalType={s.animalType}
-  setAnimalType={s.setAnimalType}
-  priorVaccination={s.priorVaccination}         // << เพิ่ม
-  setPriorVaccination={s.setPriorVaccination}   // << เพิ่ม
-  immunocompromised={s.immunocompromised}       // << เพิ่ม
-  setImmunocompromised={s.setImmunocompromised} // << เพิ่ม
-  expMode={s.expMode}
-  setExpMode={s.setExpMode}
-  exposureDate={s.exposureDate}
-  setExposureDate={s.setExposureDate}
-  startMode={s.startMode}
-  setStartMode={s.setStartMode}
-  startDatePreview={startDatePreview}
-  onConfirm={() => s.setConfirmedA(true)}
-/>
-
-
-
+      <TriageCard
+        t={t}
+        EXPOSURES={o.EXPOSURES}
+        ANIMAL_OPTIONS={o.ANIMAL_OPTIONS}
+        PRIOR_VAC={o.PRIOR_VAC}
+        TETANUS_OPTS={o.TETANUS_OPTS}
+        TETANUS_RECENT_OPTS={o.TETANUS_RECENT_OPTS}
+        todayISO={s.todayISO}
+        yesterdayISO={s.yesterdayISO}
+        exposureCat={s.exposureCat}
+        setExposureCat={s.setExposureCat}
+        animalType={s.animalType}
+        setAnimalType={s.setAnimalType}
+        priorVaccination={s.priorVaccination}
+        setPriorVaccination={s.setPriorVaccination}
+        immunocompromised={s.immunocompromised}
+        setImmunocompromised={s.setImmunocompromised}
+        tetanusDoses={s.tetanusDoses}
+        setTetanusDoses={s.setTetanusDoses}
+        tetanusRecent={s.tetanusRecent}
+        setTetanusRecent={s.setTetanusRecent}
+        expMode={s.expMode}
+        setExpMode={s.setExpMode}
+        exposureDate={s.exposureDate}
+        setExposureDate={s.setExposureDate}
+        startMode={s.startMode}
+        setStartMode={s.setStartMode}
+        startDatePreview={startDatePreview}
+        onConfirm={() => s.setConfirmedA(true)}
+      />
 
       {s.confirmedA && (
         <>
           <WoundCare t={t} />
+
           <VaccinePlan
             t={t}
             lang={lang}
@@ -91,18 +89,20 @@ export default function App() {
             regimenChoice={s.regimenChoice}
             setRegimenChoice={s.setRegimenChoice}
             startDate={s.startDate}
-            effectiveDays={s.effectiveDays}
+            effectiveDays={s.effectiveDays || []}
             addDaysISO={s.addDaysISO}
           />
+
           {s.decision.needPEP && s.exposureCat !== "1" && (
             <IcsHelper
               t={t}
               lang={lang}
               startDate={s.startDate}
-              effectiveDays={s.effectiveDays}
-              scheduleDates={s.scheduleDates}
+              effectiveDays={s.effectiveDays || []}
+              scheduleDates={s.scheduleDates || []}
             />
           )}
+
           <HospitalSummary
             t={t}
             lang={lang}
@@ -112,13 +112,18 @@ export default function App() {
             priorVaccination={s.priorVaccination}
             immunocompromised={s.immunocompromised}
             PRIOR_VAC={o.PRIOR_VAC}
+            TETANUS_OPTS={o.TETANUS_OPTS}
+            TETANUS_RECENT_OPTS={o.TETANUS_RECENT_OPTS}
+            tetanusDoses={s.tetanusDoses}
+            tetanusRecent={s.tetanusRecent}
             decision={s.decision}
-            regimenChoice={s.regimenChoice}
             startDate={s.startDate}
-            scheduleDates={s.scheduleDates}
+            scheduleDates={s.scheduleDates || []}
             summaryText={summaryText}
           />
+
           <Services t={t} />
+          <RefsFeedback />
         </>
       )}
 

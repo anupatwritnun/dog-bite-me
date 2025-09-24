@@ -1,165 +1,289 @@
-// src/features/summary/HospitalSummary.jsx
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useRef, useMemo, useEffect } from "react";
+import { useReactToPrint } from "react-to-print";
 import Card from "../../components/Card";
-import Badge from "../../components/Badge";
 import KeyRow from "../../components/KeyRow";
 import { formatDateISO } from "../../utils/format";
-import { printElementById } from "../../utils/print";
+import { addDaysISO } from "../../utils/dates";
 
-// ใช้ซ้ำทั้งในการ์ดและในโมดัล เพื่อไม่ต้องเขียนสองรอบ
-function SummaryContent({
-  t, lang,
-  exposureCat, animalType, exposureDate, priorVaccination, immunocompromised,
-  PRIOR_VAC, decision, regimenChoice, startDate, scheduleDates,
-  containerId = "hospital-summary",
-}) {
+function Pill({ children, tone = "slate" }) {
+  const tones = {
+    slate: "bg-slate-100 text-slate-700 border-slate-200",
+    green: "bg-emerald-50 text-emerald-800 border-emerald-200",
+    amber: "bg-amber-50 text-amber-900 border-amber-200",
+    red: "bg-red-50 text-red-700 border-red-200",
+  };
   return (
-    <div id={containerId} className="rounded-2xl border bg-white p-5 sm:p-6">
-      <div className="grid gap-4">
-        <KeyRow
-          k={t("fields.group", { n: "" }).replace("{n}", "").trim() || t("fields.group", { n: "" })}
-          v={
-            <Badge tone={exposureCat === "1" ? "green" : exposureCat === "2" ? "yellow" : "red"}>
-              {t("fields.group", { n: exposureCat || "-" })}
-            </Badge>
-          }
-        />
-        <KeyRow k={t("fields.animalType")} v={t(`animals.${animalType}`)} />
-        {exposureDate && <KeyRow k={t("fields.exposureDate")} v={formatDateISO(exposureDate, lang)} />}
-        <KeyRow
-          k={t("fields.priorVac")}
-          v={PRIOR_VAC.find((p) => p.id === priorVaccination)?.label || "-"}
-        />
-        <KeyRow
-          k={t("fields.immunocomp")}
-          v={immunocompromised ? t("labels.immunocompYes") : t("labels.immunocompNo")}
-        />
-        {decision.needPEP && exposureCat !== "1" && (
-          <>
-            <KeyRow k={t("labels.plan")} v={decision.regimen?.label || regimenChoice?.label} />
-            <KeyRow k="RIG" v={decision.needRIG ? t("messages.rigYes") : t("messages.rigNo")} />
-            {startDate && (
-              <KeyRow
-                k={t("fields.realAppt", { date: "" }).replace("(start )", "").trim()}
-                v={<span>{scheduleDates.map((s) => formatDateISO(s, lang)).join(", ")}</span>}
-              />
-            )}
-          </>
-        )}
-        {exposureCat === "1" && <KeyRow k={t("labels.plan")} v={t("messages.cat1NoPEP")} />}
-      </div>
-    </div>
+    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full border text-xs ${tones[tone] || tones.slate}`}>
+      {children}
+    </span>
   );
+}
+
+function buildPrettyText({
+  t, lang, exposureCat, animalType, exposureDate,
+  priorLabel, immunocompromised, rabiesDates,
+  tetDoseLabel, tetRecentLabel, tetDates, decision, startDate
+}) {
+  const d = (iso) => formatDateISO(iso, lang);
+  const lines = [];
+
+  lines.push(`สรุปแผนการรักษา`);
+  lines.push(`==================`);
+  lines.push(`• กลุ่ม: ${t("fields.group", { n: exposureCat || "-" })}`);
+  lines.push(`• ชนิดสัตว์: ${t(`animals.${animalType}`)}`);
+  if (exposureDate) lines.push(`• วันถูกกัด/ข่วน: ${d(exposureDate)}`);
+  lines.push(`• ประวัติ PEP: ${priorLabel}`);
+  lines.push(`• ภูมิคุ้มกันบกพร่อง: ${immunocompromised ? t("labels.immunocompYes") : t("labels.immunocompNo")}`);
+
+  lines.push(``);
+  lines.push(`วัคซีนพิษสุนัขบ้า`);
+  lines.push(`----------------`);
+  if (exposureCat === "1") {
+    lines.push(`- ${t("messages.cat1NoPEP")}`);
+  } else {
+    lines.push(`- แผน: ${decision.regimen?.label || "-"}`);
+    lines.push(`- RIG: ${decision.needRIG ? t("messages.rigYes") : t("messages.rigNo")}`);
+    if (startDate && rabiesDates.length) {
+      lines.push(`- นัด (เริ่ม ${d(startDate)}):`);
+      rabiesDates.forEach((x, i) => lines.push(`   • เข็มที่ ${i + 1}: ${d(x)}`));
+    }
+    if (decision.stopNote) lines.push(`- หมายเหตุ: ${decision.stopNote}`);
+  }
+
+  lines.push(``);
+  lines.push(`วัคซีนบาดทะยัก`);
+  lines.push(`--------------`);
+  lines.push(`- ประวัติ: ${tetDoseLabel}${tetRecentLabel && tetRecentLabel !== "-" ? ` • ${tetRecentLabel}` : ""}`);
+  if (decision.tetanus?.need) {
+    lines.push(`- แผน: ${decision.tetanus.label}`);
+    if (startDate && tetDates.length) {
+      lines.push(`- นัด:`);
+      tetDates.forEach((x, i) => lines.push(`   • เข็มที่ ${i + 1}: ${d(x)}`));
+    }
+  } else {
+    lines.push(`- ${decision.tetanus?.label || t("labels.tetanusNone")}`);
+  }
+
+  return lines.join("\n");
 }
 
 export default function HospitalSummary({
   t, lang,
-  exposureCat, animalType, exposureDate, priorVaccination, immunocompromised,
-  PRIOR_VAC, decision, regimenChoice, startDate, scheduleDates, summaryText
+  exposureCat, animalType, exposureDate,
+  priorVaccination, immunocompromised,
+  PRIOR_VAC,
+  TETANUS_OPTS, TETANUS_RECENT_OPTS,
+  tetanusDoses, tetanusRecent,
+  decision, startDate, scheduleDates, summaryText,
 }) {
-  const [open, setOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [toast, setToast] = useState(null); // {text: string}
 
-  // ปิดด้วย Esc
-  const onKey = useCallback((e) => {
-    if (e.key === "Escape") setOpen(false);
-  }, []);
+  // labels
+  const priorLabel = PRIOR_VAC.find((p) => p.id === priorVaccination)?.label || "-";
+  const tetDoseLabel = TETANUS_OPTS.find((o) => o.id === tetanusDoses)?.label || "-";
+  const tetRecentLabel = tetanusRecent
+    ? TETANUS_RECENT_OPTS.find((o) => o.id === tetanusRecent)?.label || "-"
+    : "-";
+
+  // schedules
+  const rabiesDates = scheduleDates || [];
+  const tetDates = (decision.tetanus?.offsets || []).map((d) => addDaysISO(startDate, d));
+
+  const prettyText = useMemo(
+    () =>
+      buildPrettyText({
+        t, lang, exposureCat, animalType, exposureDate,
+        priorLabel, immunocompromised, rabiesDates,
+        tetDoseLabel, tetRecentLabel, tetDates, decision, startDate
+      }),
+    [
+      t, lang, exposureCat, animalType, exposureDate,
+      priorLabel, immunocompromised, rabiesDates,
+      tetDoseLabel, tetRecentLabel, tetDates, decision, startDate
+    ]
+  );
+
+  // กล่องที่ใช้สั่งพิมพ์ (จะพิมพ์เฉพาะ pre นี้)
+  const printRef = useRef(null);
+
+  const handlePrint = useReactToPrint({
+    content: () => printRef.current,
+    documentTitle: "สรุปแผนการรักษา",
+    pageStyle: `
+      @page { margin: 16mm; }
+      body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      pre { font-size: 14px; line-height: 1.7; }
+    `,
+    // ให้โมดัลยังเปิดอยู่ระหว่างโชว์ dialog
+    removeAfterPrint: false,
+  });
+
+  const copyToClipboard = async () => {
+    try {
+      await navigator.clipboard.writeText(prettyText);
+      setToast({ text: "คัดลอกแล้ว" });
+    } catch {
+      const ta = document.createElement("textarea");
+      ta.value = prettyText;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      document.body.removeChild(ta);
+      setToast({ text: "คัดลอกแล้ว" });
+    }
+  };
+
+  // ซ่อน toast อัตโนมัติ
   useEffect(() => {
-    if (!open) return;
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [open, onKey]);
+    if (!toast) return;
+    const id = setTimeout(() => setToast(null), 1600);
+    return () => clearTimeout(id);
+  }, [toast]);
+
+  const CardStructured = () => (
+    <div className="space-y-4">
+      <div className="space-y-1">
+        <div className="flex items-center gap-2">
+          <h3 className="font-semibold">🦠 {t("sections.planTitle")}</h3>
+          {exposureCat && (
+            <Pill tone={exposureCat === "1" ? "green" : exposureCat === "2" ? "amber" : "red"}>
+              {t("fields.group", { n: exposureCat })}
+            </Pill>
+          )}
+        </div>
+        <KeyRow label={t("fields.animalType")} value={t(`animals.${animalType}`)} />
+        {exposureDate && <KeyRow label={t("fields.exposureDate")} value={formatDateISO(exposureDate, lang)} />}
+        <KeyRow label={t("fields.priorVac")} value={priorLabel} />
+        <KeyRow label={t("fields.immunocomp")} value={immunocompromised ? t("labels.immunocompYes") : t("labels.immunocompNo")} />
+
+        {exposureCat === "1" ? (
+          <div className="mt-2 p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-sm">
+            {t("messages.cat1NoPEP")}
+          </div>
+        ) : (
+          <>
+            <p className="text-sm"><span className="font-medium">{t("labels.plan")}:</span> {decision.regimen?.label || "-"}</p>
+            <p className="text-sm"><span className="font-medium">{t("labels.rig")}:</span> {decision.needRIG ? t("messages.rigYes") : t("messages.rigNo")}</p>
+            {startDate && rabiesDates.length > 0 && (
+              <ul className="list-disc ml-5 text-sm mt-1">
+                {rabiesDates.map((d, i) => (
+                  <li key={i}>{`พิษสุนัขบ้า เข็มที่ ${i + 1} — ${formatDateISO(d, lang)}`}</li>
+                ))}
+              </ul>
+            )}
+            {decision.stopNote && <div className="text-xs text-gray-600 mt-2">{decision.stopNote}</div>}
+          </>
+        )}
+      </div>
+
+      <div className="space-y-1">
+        <div className="flex items-center gap-2">
+          <h3 className="font-semibold">💉 {t("sections.tetanusTitle")}</h3>
+          <Pill>{tetDoseLabel}</Pill>
+          {tetanusRecent && tetRecentLabel !== "-" && <Pill tone="amber">{tetRecentLabel}</Pill>}
+        </div>
+        {decision.tetanus?.need ? (
+          <ul className="list-disc ml-5 text-sm mt-1">
+            {tetDates.map((d, i) => (
+              <li key={i}>{`บาดทะยัก เข็มที่ ${i + 1} — ${formatDateISO(d, lang)}`}</li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-sm mt-1">{decision.tetanus?.label || t("labels.tetanusNone")}</p>
+        )}
+      </div>
+    </div>
+  );
 
   return (
     <>
-      <Card title={t("sections.hospSummary")} icon="📄">
-        {/* เวอร์ชันการ์ดปกติ */}
-        <SummaryContent
-          t={t} lang={lang}
-          exposureCat={exposureCat}
-          animalType={animalType}
-          exposureDate={exposureDate}
-          priorVaccination={priorVaccination}
-          immunocompromised={immunocompromised}
-          PRIOR_VAC={PRIOR_VAC}
-          decision={decision}
-          regimenChoice={regimenChoice}
-          startDate={startDate}
-          scheduleDates={scheduleDates}
-          containerId="hospital-summary"
-        />
-
-        {/* แถบปุ่ม: ไม่มี “บันทึกเป็นรูป” แล้ว, เพิ่ม “ขยาย” */}
-        <div className="mt-3 flex flex-wrap gap-2">
+      {/* Card view */}
+      <Card title={t("sections.hospSummary")} icon="🧾">
+        <CardStructured />
+        <div className="flex items-center gap-3 mt-4">
           <button
-            className="px-4 py-2 rounded-xl bg-slate-900 text-white"
-            onClick={() => navigator.clipboard.writeText(summaryText)}
+            onClick={() => setIsModalOpen(true)}
+            className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 w-full"
           >
-            {t("ui.copy")}
-          </button>
-
-          <button
-            className="px-4 py-2 rounded-xl bg-rabies-600 hover:bg-rabies-700 text-white"
-            onClick={() => printElementById("hospital-summary", t("sections.hospSummary"))}
-            title="พิมพ์หรือบันทึกเป็น PDF"
-          >
-            🖨️ พิมพ์/บันทึกเป็น PDF
-          </button>
-
-          <button
-            className="px-4 py-2 rounded-xl bg-slate-200 hover:bg-slate-300"
-            onClick={() => setOpen(true)}
-            title="ขยายดูเต็มจอ"
-          >
-            🔎 ขยาย
+            ขยายเพื่อดูและพิมพ์ ↗️
           </button>
         </div>
       </Card>
 
-      {/* Modal เต็มจอ */}
-      {open && (
+      {/* Modal */}
+      {isModalOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
-          role="dialog"
-          aria-modal="true"
+          className="fixed inset-0 bg-black/70 z-50 flex justify-center items-center p-4"
+          onClick={() => setIsModalOpen(false)}
         >
-          <div className="relative w-full max-w-5xl max-h-[90vh] overflow-auto bg-white rounded-2xl shadow-2xl">
-            {/* หัวโมดัล */}
-            <div className="sticky top-0 z-10 flex items-center justify-between px-5 sm:px-6 py-3 border-b bg-white/95 backdrop-blur">
-              <h3 className="text-lg font-semibold text-slate-900">{t("sections.hospSummary")}</h3>
-              <div className="flex items-center gap-2">
+          <div
+            className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[92vh] flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex flex-wrap gap-3 justify-between items-center p-4 border-b">
+              <h2 className="text-lg font-bold">สรุปแผนการรักษา</h2>
+              <div className="flex gap-2">
                 <button
-                  className="px-3 py-1.5 rounded-lg bg-slate-900 text-white text-sm"
-                  onClick={() => printElementById("hospital-summary-full", t("sections.hospSummary"))}
+                  onClick={copyToClipboard}
+                  className="px-3 py-1.5 text-sm bg-slate-900 text-white rounded-lg hover:bg-slate-800"
                 >
-                  🖨️ พิมพ์/บันทึก PDF
+                  คัดลอกข้อความ
                 </button>
                 <button
-                  className="px-3 py-1.5 rounded-lg bg-slate-200 hover:bg-slate-300 text-sm"
-                  onClick={() => setOpen(false)}
-                  aria-label="Close"
+                  onClick={handlePrint}
+                  className="px-3 py-1.5 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700"
                 >
-                  ✕ ปิด
+                  พิมพ์ 🖨️
+                </button>
+                <button
+                  onClick={() => setIsModalOpen(false)}
+                  className="px-3 py-1.5 text-sm bg-gray-200 rounded-lg hover:bg-gray-300"
+                >
+                  ปิด
                 </button>
               </div>
             </div>
 
-            {/* เนื้อหา: สรุปแบบใหญ่ เต็มจอ */}
-            <div className="p-5 sm:p-6">
-              <SummaryContent
-                t={t} lang={lang}
-                exposureCat={exposureCat}
-                animalType={animalType}
-                exposureDate={exposureDate}
-                priorVaccination={priorVaccination}
-                immunocompromised={immunocompromised}
-                PRIOR_VAC={PRIOR_VAC}
-                decision={decision}
-                regimenChoice={regimenChoice}
-                startDate={startDate}
-                scheduleDates={scheduleDates}
-                containerId="hospital-summary-full"
-              />
+            {/* Content */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 p-6 overflow-y-auto">
+              <div className="min-h-[300px]">
+                <div className="border rounded-xl p-4 shadow-sm">
+                  <CardStructured />
+                </div>
+              </div>
+
+              <div className="min-h-[300px] relative">
+                {/* ปุ่มคัดลอกซ้ำที่ลอยบนกล่อง */}
+                <button
+                  onClick={copyToClipboard}
+                  className="absolute top-3 right-3 px-2.5 py-1 text-xs bg-white/80 backdrop-blur border border-slate-200 rounded-md hover:bg-white shadow-sm"
+                  aria-label="คัดลอกข้อความ"
+                >
+                  คัดลอก
+                </button>
+
+                <pre
+                  ref={printRef}
+                  className="w-full h-[520px] lg:h-[560px] overflow-auto rounded-2xl p-5 shadow-inner
+                             bg-gradient-to-br from-slate-50 via-white to-slate-50
+                             border border-slate-200
+                             text-[15px] leading-7 font-mono whitespace-pre-wrap text-slate-800"
+                >
+{prettyText}
+                </pre>
+              </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Toast */}
+      {toast && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[60]">
+          <div className="px-4 py-2 rounded-full shadow-lg bg-slate-900 text-white text-sm">
+            {toast.text}
           </div>
         </div>
       )}

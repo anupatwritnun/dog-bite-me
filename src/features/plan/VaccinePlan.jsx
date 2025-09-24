@@ -10,6 +10,9 @@ export default function VaccinePlan({
   decision, regimenChoice, setRegimenChoice,
   startDate, effectiveDays, addDaysISO
 }) {
+  const displayRegimen =
+    regimenChoice || decision.regimen || decision.suggestedRegimen || null;
+
   return (
     <Card title={t("sections.planTitle")} icon="💉">
       {exposureCat === "1" ? (
@@ -20,7 +23,7 @@ export default function VaccinePlan({
         <>
           {priorVaccination !== "never" ? (
             <>
-              <KeyRow k={t("labels.plan")} v={decision.regimen?.label || regimenChoice?.label} />
+              <KeyRow k={t("labels.plan")} v={displayRegimen?.label || "-"} />
               {decision.needRIG && <KeyRow k="RIG" v={t("messages.needRIGTitle")} />}
             </>
           ) : (
@@ -31,7 +34,7 @@ export default function VaccinePlan({
                   <label
                     key={r.id}
                     className={`p-3 border rounded-xl cursor-pointer ${
-                      regimenChoice?.id === r.id
+                      displayRegimen?.id === r.id
                         ? "bg-slate-900 text-white border-slate-900"
                         : "border-slate-200 hover:border-slate-300"
                     }`}
@@ -39,10 +42,11 @@ export default function VaccinePlan({
                     <input
                       type="radio"
                       className="hidden"
-                      checked={regimenChoice?.id === r.id}
+                      checked={displayRegimen?.id === r.id}
                       onChange={() => setRegimenChoice(r)}
                     />
                     <p className="font-medium">{r.label}</p>
+                    {r.desc ? <p className="text-xs opacity-80 mt-0.5">{r.desc}</p> : null}
                   </label>
                 ))}
               </div>
@@ -56,13 +60,13 @@ export default function VaccinePlan({
             </>
           )}
 
-          {decision.needPEP && startDate && (
+          {decision.needPEP && startDate && (effectiveDays?.length > 0) && (
             <div className="rounded-2xl border p-4 bg-gray-50 mt-3">
               <p className="text-sm font-medium">
                 {t("fields.realAppt", { date: formatDateISO(startDate, lang) })}
               </p>
               <ul className="list-disc pl-5 text-sm mt-1">
-                {(effectiveDays || []).map((d, i) => {
+                {effectiveDays.map((d, i) => {
                   const iso = addDaysISO(startDate, d);
                   return (
                     <li key={i}>{t("labels.dayLine", { d, date: formatDateISO(iso, lang) })}</li>
