@@ -1,4 +1,8 @@
 import React from "react";
+import ShareBar from "./ShareBar";
+// ...
+<ShareBar />
+
 
 export default function Header() {
   return (
