@@ -1,11 +1,19 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <script defer data-domain="dog-bite-me.vercel.app" src="https://plausible.io/js/script.js"></script>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vite + React</title>
+    <title>Dog Bite PEP Checker</title>
+
+    <!-- Plausible: hash + outbound-links + pageview-props + tagged-events -->
+    <script defer data-domain="dog-bite-me.vercel.app"
+      src="https://plausible.io/js/script.hash.outbound-links.pageview-props.tagged-events.js"></script>
+    <script>
+      window.plausible = window.plausible || function() {
+        (window.plausible.q = window.plausible.q || []).push(arguments)
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>

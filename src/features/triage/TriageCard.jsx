@@ -3,28 +3,31 @@ import Card from "../../components/Card";
 import RadioList from "../../components/RadioList";
 import SegmentedDate from "../../components/SegmentedDate";
 import ImageRadioGrid from "../../components/ImageRadioGrid";
+import { track, setPageProps } from "../../utils/analytics"; // << เพิ่ม
 
-export default function TriageCard({
-  t,
-  EXPOSURES,
-  ANIMAL_OPTIONS,
-  PRIOR_VAC,
-  TETANUS_OPTS,
-  TETANUS_RECENT_OPTS,
-  todayISO,
-  yesterdayISO,
-  exposureCat, setExposureCat,
-  animalType, setAnimalType,
-  priorVaccination, setPriorVaccination,
-  immunocompromised, setImmunocompromised,
-  tetanusDoses, setTetanusDoses,
-  tetanusRecent, setTetanusRecent,
-  expMode, setExpMode,
-  exposureDate, setExposureDate,
-  startMode, setStartMode,
-  startDatePreview,
-  onConfirm,
-}) {
+export default function TriageCard(props) {
+  const {
+    t,
+    EXPOSURES,
+    ANIMAL_OPTIONS,
+    PRIOR_VAC,
+    TETANUS_OPTS,
+    TETANUS_RECENT_OPTS,
+    todayISO,
+    yesterdayISO,
+    exposureCat, setExposureCat,
+    animalType, setAnimalType,
+    priorVaccination, setPriorVaccination,
+    immunocompromised, setImmunocompromised,
+    tetanusDoses, setTetanusDoses,
+    tetanusRecent, setTetanusRecent,
+    expMode, setExpMode,
+    exposureDate, setExposureDate,
+    startMode, setStartMode,
+    startDatePreview,
+    onConfirm,
+  } = props;
+
   const EXPOSURES_WITH_IMG = (EXPOSURES || []).map((o) => {
     if (o.img) return o;
     if (o.id === "1") return { ...o, img: "/cat1.jpg" };
@@ -36,16 +39,34 @@ export default function TriageCard({
   return (
     <Card title={t("sections.triageTitle")} subtitle={t("sections.triageSubtitle")} icon="🐾">
       <div className="grid gap-6 pb-16">
-        {/* Exposure (image cards) */}
+        {/* Exposure */}
         <div>
           <p className="font-medium mb-2">{t("fields.exposureType")}</p>
-          <ImageRadioGrid name="expo" value={exposureCat} onChange={setExposureCat} options={EXPOSURES_WITH_IMG} />
+          <ImageRadioGrid
+            name="expo"
+            value={exposureCat}
+            onChange={(v) => {
+              setExposureCat(v);
+              track("Select Exposure", { exposureCat: v });
+              setPageProps({ exposureCat: v });
+            }}
+            options={EXPOSURES_WITH_IMG}
+          />
         </div>
 
         {/* Animal */}
         <div>
           <p className="font-medium mb-2">{t("fields.animalType")}</p>
-          <RadioList name="animal" value={animalType} onChange={setAnimalType} options={ANIMAL_OPTIONS} />
+          <RadioList
+            name="animal"
+            value={animalType}
+            onChange={(v) => {
+              setAnimalType(v);
+              track("Select Animal", { animalType: v });
+              setPageProps({ animalType: v });
+            }}
+            options={ANIMAL_OPTIONS}
+          />
         </div>
 
         {/* Dates */}
@@ -53,9 +74,15 @@ export default function TriageCard({
           <SegmentedDate
             label={t("fields.exposureDate")}
             mode={expMode}
-            setMode={setExpMode}
+            setMode={(m) => {
+              setExpMode(m);
+              track("Change ExposureDate Mode", { mode: m });
+            }}
             date={exposureDate}
-            setDate={setExposureDate}
+            setDate={(d) => {
+              setExposureDate(d);
+              track("Set ExposureDate", { dateISO: d });
+            }}
             options={[
               { id: "today", label: t("fields.today"), getISO: todayISO },
               { id: "yesterday", label: t("fields.yesterday"), getISO: yesterdayISO },
@@ -63,13 +90,17 @@ export default function TriageCard({
             ]}
           />
 
+          {/* Start Day 0 */}
           <div>
             <label className="block text-sm font-medium mb-1">{t("fields.startDay0")}</label>
             <div className="flex flex-wrap gap-2 mb-2">
               {["same", "tomorrow", "custom"].map((mode) => (
                 <button
                   key={mode}
-                  onClick={() => setStartMode(mode)}
+                  onClick={() => {
+                    setStartMode(mode);
+                    track("Select StartMode", { startMode: mode });
+                  }}
                   className={`px-3 py-1.5 rounded-xl border ${
                     startDatePreview.mode === mode
                       ? "bg-slate-900 text-white border-slate-900"
@@ -93,11 +124,26 @@ export default function TriageCard({
         <div className="grid sm:grid-cols-2 gap-4">
           <div>
             <p className="font-medium mb-2">{t("fields.priorVac")}</p>
-            <RadioList name="prior" value={priorVaccination} onChange={setPriorVaccination} options={PRIOR_VAC} />
+            <RadioList
+              name="prior"
+              value={priorVaccination}
+              onChange={(v) => {
+                setPriorVaccination(v);
+                track("Select PriorRabies", { prior: v });
+              }}
+              options={PRIOR_VAC}
+            />
           </div>
           <div className="sm:pt-6">
             <label className="inline-flex items-center gap-2 text-sm">
-              <input type="checkbox" checked={immunocompromised} onChange={(e) => setImmunocompromised(e.target.checked)} />
+              <input
+                type="checkbox"
+                checked={immunocompromised}
+                onChange={(e) => {
+                  setImmunocompromised(e.target.checked);
+                  track("Toggle Immunocompromised", { value: e.target.checked });
+                }}
+              />
               {t("fields.immunocomp")}
             </label>
           </div>
@@ -107,11 +153,27 @@ export default function TriageCard({
         <div className="grid sm:grid-cols-2 gap-4">
           <div>
             <p className="font-medium mb-2">{t("fields.tetanusDoses")}</p>
-            <RadioList name="tetanus" value={tetanusDoses} onChange={setTetanusDoses} options={TETANUS_OPTS} />
+            <RadioList
+              name="tetanus"
+              value={tetanusDoses}
+              onChange={(v) => {
+                setTetanusDoses(v);
+                track("Select TetanusDoses", { tetanusDoses: v });
+              }}
+              options={TETANUS_OPTS}
+            />
           </div>
           <div>
             <p className="font-medium mb-2">{t("fields.tetanusRecent")}</p>
-            <RadioList name="tetanusRecent" value={tetanusRecent} onChange={setTetanusRecent} options={TETANUS_RECENT_OPTS} />
+            <RadioList
+              name="tetanusRecent"
+              value={tetanusRecent}
+              onChange={(v) => {
+                setTetanusRecent(v);
+                track("Select TetanusRecent", { tetanusRecent: v });
+              }}
+              options={TETANUS_RECENT_OPTS}
+            />
           </div>
         </div>
       </div>
@@ -121,7 +183,15 @@ export default function TriageCard({
         <div className="mx-[-1.25rem] sm:mx-[-1.5rem] rounded-b-2xl">
           <div className="px-5 sm:px-6 py-3 flex items-center gap-3 bg-white/90 backdrop-blur supports-[backdrop-filter]:bg-white/60 border-t border-slate-200 rounded-b-2xl">
             <button
-              onClick={onConfirm}
+              onClick={() => {
+                track("Start Flow", {
+                  exposureCat,
+                  animalType,
+                  prior: priorVaccination,
+                  immunocompromised,
+                });
+                onConfirm();
+              }}
               disabled={!exposureCat}
               className={`px-4 py-2 rounded-xl transition-colors ${
                 exposureCat ? "bg-slate-200 text-slate-800 hover:bg-slate-300 active:bg-slate-900 active:text-white"

@@ -3,6 +3,7 @@ import Card from "../../components/Card";
 import KeyRow from "../../components/KeyRow";
 import { REGIMENS } from "../../utils/animal";
 import { formatDateISO } from "../../utils/format";
+import { track } from "../../utils/analytics"; // << เพิ่ม
 
 export default function VaccinePlan({
   t, lang,
@@ -43,7 +44,10 @@ export default function VaccinePlan({
                       type="radio"
                       className="hidden"
                       checked={displayRegimen?.id === r.id}
-                      onChange={() => setRegimenChoice(r)}
+                      onChange={() => {
+                        setRegimenChoice(r);
+                        track("Select Regimen", { regimen: r.id });
+                      }}
                     />
                     <p className="font-medium">{r.label}</p>
                     {r.desc ? <p className="text-xs opacity-80 mt-0.5">{r.desc}</p> : null}
