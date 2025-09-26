@@ -8,7 +8,7 @@ export default function Services({ t }) {
     <Card >
       <div className="space-y-3">
         <a
-  href="https://maps.google.com/?q=clinic+rabies+vaccine+near+me"
+  href="https://maps.google.com/?q=โรงพยาบาล/คลินิกทั่วไป+ใกล้ฉัน"
   target="_blank"
   rel="noreferrer"
   className="block text-center w-full px-4 py-3 rounded-2xl bg-emerald-600 text-white font-semibold shadow-sm hover:bg-emerald-700 active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-emerald-400"
