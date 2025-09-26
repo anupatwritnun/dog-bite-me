@@ -72,25 +72,41 @@ export function decide(state) {
   // ---------- Rabies ----------
   if (state.animalType === "non_mammal") {
     out.notes.push("ไม่ใช่สัตว์เลี้ยงลูกด้วยนม โดยทั่วไปไม่ต้องฉีดวัคซีน");
+    // Tetanus: ไม่พิจารณาใน non-mammal เช่นกัน (คงเป็น false)
     return out;
   }
 
   if (state.exposureCat === "1") {
     out.notes.push("กลุ่มที่ 1: ไม่ต้องฉีดวัคซีน/RIG");
-  } else {
-    out.needPEP = true;
-    out.needVaccine = true;
+    out.needPEP = false;
+    out.needVaccine = false;
+    out.needRIG = false;
 
-    if (state.priorVaccination === "<=6m") {
-      out.regimen = REGIMENS.BOOSTER_1;
-    } else if (state.priorVaccination === ">6m") {
-      out.regimen = REGIMENS.BOOSTER_2;
-    } else {
-      out.regimen = state.regimenChoice || REGIMENS.IM_ESSEN;
-    }
+    // ---------- Tetanus ----------
+    // ตามข้อกำหนดใหม่: Cat 1 ไม่ต้องพิจารณา Tetanus
+    out.tetanus = {
+      need: false,
+      code: "SKIP_CAT1",
+      label: "กลุ่มที่ 1: ไม่จำเป็นต้องฉีดบาดทะยัก",
+      offsets: [],
+    };
 
-    out.needRIG = state.exposureCat === "3";
+    return out;
   }
+
+  // Cat 2/3
+  out.needPEP = true;
+  out.needVaccine = true;
+
+  if (state.priorVaccination === "<=6m") {
+    out.regimen = REGIMENS.BOOSTER_1;
+  } else if (state.priorVaccination === ">6m") {
+    out.regimen = REGIMENS.BOOSTER_2;
+  } else {
+    out.regimen = state.regimenChoice || REGIMENS.IM_ESSEN;
+  }
+
+  out.needRIG = state.exposureCat === "3";
 
   const isDog = state.animalType === "dog";
   const isCat = state.animalType === "cat";
@@ -102,6 +118,7 @@ export function decide(state) {
   }
 
   // ---------- Tetanus ----------
+  // ใช้ตรรกะ Tetanus เฉพาะ Cat 2/3 เท่านั้น
   out.tetanus = computeTetanusPlan(state.tetanusDoses, state.tetanusRecent);
 
   return out;

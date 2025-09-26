@@ -172,6 +172,11 @@
       "immLine": "• ကိုယ်ခံအားပျော့: {{imm}}",
       "rabiesPlanTitle": "🦠 ချေဝက်ရူးရောဂါ ကာကွယ်ဆေး အစီအစဉ် ({{regimen}})",
       "rabiesDoseLine": "- အလှည့် {{n}} — {{date}}",
+      "rabiesNoPEPTitle": "🦠 ကျားနားရပ်ဆေးအထိမ်းအမှတ် (PEP မလိုအပ်ပါ)",
+"rabiesNoPEP": "အမျိုးအစား 1: ကပ်ဆေး/RIG မလိုအပ်ပါ",
+"noRabiesDoses": "-",
+"tetSkipCat1": "အမျိုးအစား 1: တက်တနပ်ဆေး မလိုအပ်ပါ"
+,
       "rigTitle": "💉 RIG:",
       "rigYes": "အကြံပြု (အမျိုးအစား {{n}})",
       "rigNo": "မအကြံပြု",

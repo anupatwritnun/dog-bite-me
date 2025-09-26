@@ -167,6 +167,11 @@
       "basicsTitle": "📋 基本情報",
       "catLine": "• WHO分類: {{n}}",
       "animalLine": "• 動物: {{animal}}",
+      "rabiesNoPEPTitle": "🦠 狂犬病ワクチンプラン（PEP不要）",
+"rabiesNoPEP": "カテゴリー1: ワクチン/RIGは不要",
+"noRabiesDoses": "-",
+"tetSkipCat1": "カテゴリー1: 破傷風ワクチンは不要"
+,
       "exposureDateLine": "• 暴露日: {{date}}",
       "priorLine": "• 狂犬病ワクチン歴: {{prior}}",
       "immLine": "• 免疫不全: {{imm}}",

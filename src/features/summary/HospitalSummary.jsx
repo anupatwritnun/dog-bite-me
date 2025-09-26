@@ -144,8 +144,20 @@ export default function HospitalSummary({
     : "-";
 
   // schedules
-  const rabiesDates = scheduleDates || [];
-  const tetDates = (decision.tetanus?.offsets || []).map((d) => addDaysISO(startDate, d));
+  // schedules
+const rabiesDates = scheduleDates || [];
+const tetDates = useMemo(() => {
+  const offs = decision?.tetanus?.offsets;
+  if (!Array.isArray(offs) || !startDate) return [];
+  // ถ้าไม่ต้องฉีด ก็ไม่ต้องคำนวณ
+  if (!decision?.tetanus?.need) return [];
+  try {
+    return offs.map((d) => addDaysISO(startDate, d)).filter(Boolean);
+  } catch {
+    return [];
+  }
+}, [decision?.tetanus, startDate]);
+
 
   const prettyText = useMemo(
     () =>
@@ -161,21 +173,21 @@ export default function HospitalSummary({
     ]
   );
 
-  // โซนสำหรับพิมพ์ตารางนัด (ใช้กับ react-to-print)
+  // โซนสำหรับพิมพ์ตารางนัด
   const printRef = useRef(null);
- const handlePrint = React.useCallback(() => {
+  const handlePrint = React.useCallback(() => {
   try {
-    if (typeof window !== "undefined" && typeof window.plausible === "function") {
-      window.plausible("print_schedule", { props: { section: "summary", lang } });
-    }
-  } catch {}
-  printScheduleTable({
-    t,
-    lang,
-    rabiesDates: scheduleDates || [],  // ใช้ชุดวันที่เดิมของคุณ
-    tetDates,                          // คำนวณจาก decision.tetanus + startDate ตามโค้ดคุณ
-    title: lang === "th" ? "ตารางฉีดวัคซีน" : "Vaccination Schedule"
-  });
+    window.plausible?.("print_schedule", { props: { section: "summary", lang } });
+    printScheduleTable({
+      t,
+      lang,
+      rabiesDates: scheduleDates || [],
+      tetDates,
+      title: lang === "th" ? "ตารางฉีดวัคซีน" : "Vaccination Schedule"
+    });
+  } catch (e) {
+    console.error("print_schedule failed:", e);
+  }
 }, [t, lang, scheduleDates, tetDates]);
 
 
@@ -262,15 +274,19 @@ export default function HospitalSummary({
   // -------- Doctor-facing subsection (form, multilang + brace-free) --------
   const DoctorSummaryForm = () => {
     const d = (iso) => formatDateISO(iso, lang);
+    const isCat1 = exposureCat === "1";
+
     const regimenLabel = labelForRegimen(t, decision.regimen || decision.suggestedRegimen);
-
-    const rabiesLines = rabiesDates
-      .map((iso, i) => t2("summary.doctor.rabiesDoseLine", { n: i + 1, date: d(iso) }))
-      .join("\n");
-
     const animalText = stripCurlies(t(`animals.${animalType}`));
 
-    const firstTet = tetDates && tetDates[0] ? d(tetDates[0]) : "";
+    // Rabies lines: แสดงเฉพาะถ้าไม่ใช่ Cat 1
+    const rabiesLines = !isCat1 && rabiesDates.length
+      ? rabiesDates.map((iso, i) => t2("summary.doctor.rabiesDoseLine", { n: i + 1, date: d(iso) })).join("\n")
+      : "";
+
+    // Tetanus: ข้ามถ้า Cat 1 หรือ code เป็น SKIP_CAT1
+    const skipTet = isCat1 || decision?.tetanus?.code === "SKIP_CAT1";
+    const firstTet = (tetDates && tetDates[0]) ? d(tetDates[0]) : "";
     const tetBoosterLine = firstTet
       ? t2("summary.doctor.tetBoosterWithDate", { date: firstTet })
       : t2("summary.doctor.tetBoosterNoDate");
@@ -294,30 +310,60 @@ export default function HospitalSummary({
         </div>
 
         {/* แผนวัคซีนพิษสุนัขบ้า */}
-        <div>
-          <div className="text-base sm:text-lg font-bold mb-1">
-            {t2("summary.doctor.rabiesPlanTitle", { regimen: regimenLabel })}
-          </div>
-          <div className="whitespace-pre-wrap">{rabiesLines}</div>
-        </div>
+<div>
+  <div className="text-base sm:text-lg font-bold mb-1">
+    {isCat1
+      ? `💉 ${t2("summary.doctor.rabiesNoPEPTitle") || "แผนวัคซีนพิษสุนัขบ้า (ไม่ต้องฉีด)"}`
+      : `💉 ${t2("summary.doctor.rabiesPlanTitle", { regimen: regimenLabel })}`
+    }
+  </div>
+  <div className="whitespace-pre-wrap">
+    {isCat1
+      ? (t2("summary.doctor.rabiesNoPEP") || "กลุ่ม 1: ไม่ต้องฉีดวัคซีน/RIG")
+      : (rabiesLines || (t2("summary.doctor.noRabiesDoses") || "-"))
+    }
+  </div>
+</div>
+
 
         {/* RIG */}
         <div>
           <div className="text-base sm:text-lg font-bold mb-1">{t2("summary.doctor.rigTitle")}</div>
-          <div>{decision.needRIG ? t2("summary.doctor.rigYes", { n: exposureCat || "-" }) : t2("summary.doctor.rigNo")}</div>
+          <div>
+            {isCat1
+              ? (t2("summary.doctor.rigNo") || "ไม่แนะนำ")
+              : (decision.needRIG ? t2("summary.doctor.rigYes", { n: exposureCat || "-" }) : t2("summary.doctor.rigNo"))
+            }
+          </div>
         </div>
 
         {/* Tetanus */}
-        <div>
-          <div className="text-base sm:text-lg font-bold mb-1">{t2("summary.doctor.tetanusTitle")}</div>
-          <div className="whitespace-pre-wrap">
-            {[
-              t2("summary.doctor.tetSeriesLine1"),
-              t2("summary.doctor.tetSeriesLine2"),
-              tetBoosterLine
-            ].join("\n")}
-          </div>
-        </div>
+<div>
+  <div className="text-base sm:text-lg font-bold mb-1">{t2("summary.doctor.tetanusTitle")}</div>
+
+  {skipTet ? (
+    <div>{t2("summary.doctor.tetSkipCat1") || "กลุ่ม 1: ไม่จำเป็นต้องฉีดบาดทะยัก"}</div>
+  ) : decision?.tetanus?.need ? (
+    <div className="whitespace-pre-wrap">
+      {decision.tetanus.code === "SERIES" ? (
+        [
+          t2("summary.doctor.tetSeriesLine1"),
+          t2("summary.doctor.tetSeriesLine2"),
+          (tetDates && tetDates.length
+            ? tetDates.map((iso, i) => t2("labels.doseLine", { n: i + 1, date: d(iso) })).join("\n")
+            : null),
+        ].filter(Boolean).join("\n")
+      ) : (
+        (firstTet
+          ? t2("summary.doctor.tetBoosterWithDate", { date: firstTet })
+          : t2("summary.doctor.tetBoosterNoDate"))
+      )}
+    </div>
+  ) : (
+    <div>{t2("labels.tetanusNone") || "ไม่จำเป็นต้องฉีดเพิ่มเติม"}</div>
+  )}
+</div>
+
       </div>
     );
   };
@@ -384,15 +430,17 @@ export default function HospitalSummary({
 
         {/* ปุ่มด้านล่าง: ไม่มี “ขยาย” อีกต่อไป เหลือแค่ปริ้น */}
         <div className="flex items-center gap-3 mt-5">
-        <button
-  onClick={handlePrint}
-  className="px-4 py-2 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 w-full"
-  data-track-label="summary_print"
-  aria-label={(t("ui.printScheduleAria") || (lang === "th" ? "พิมพ์ตารางนัด" : "Print vaccination schedule"))}
->
-  {t("ui.printSchedule") || (lang === "th" ? "พิมพ์ตารางนัด" : "Print schedule")}
-</button>
-
+          <button
+            onClick={() => {
+              try { window.plausible?.("print_schedule", { props: { lang } }); } catch {}
+              handlePrint();
+            }}
+            className="px-4 py-2 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 w-full"
+            data-track-label="summary_print"
+            aria-label={t("ui.printSchedule") || (lang === "th" ? "พิมพ์ตารางนัด" : "Print schedule")}
+          >
+            {t("ui.printSchedule") || (lang === "th" ? "พิมพ์ตารางนัด" : "Print schedule")}
+          </button>
         </div>
       </Card>
 

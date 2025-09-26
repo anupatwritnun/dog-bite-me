@@ -167,6 +167,11 @@
       "basicsTitle": "📋 基本信息",
       "catLine": "• WHO 类别：{{n}}",
       "animalLine": "• 动物：{{animal}}",
+      "rabiesNoPEPTitle": "🦠 狂犬病疫苗计划（无需PEP）",
+"rabiesNoPEP": "第1类：不需要疫苗/RIG",
+"noRabiesDoses": "-",
+"tetSkipCat1": "第1类：不需要破伤风疫苗"
+,
       "exposureDateLine": "• 暴露日期：{{date}}",
       "priorLine": "• 狂犬病疫苗史：{{prior}}",
       "immLine": "• 免疫低下：{{imm}}",

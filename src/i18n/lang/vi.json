@@ -177,6 +177,11 @@
       "rigNo": "Không khuyến nghị",
       "tetanusTitle": "💉 Vắc xin uốn ván",
       "tetSeriesLine1": "- Đã hoàn tất ≥ 3 liều",
+      "rabiesNoPEPTitle": "🦠 Kế hoạch tiêm vắc xin dại (Không cần PEP)",
+"rabiesNoPEP": "Loại 1: Không cần tiêm vắc xin/RIG",
+"noRabiesDoses": "-",
+"tetSkipCat1": "Loại 1: Không cần tiêm uốn ván"
+,
       "tetSeriesLine2": "- Liều gần nhất > 5 năm",
       "tetBoosterWithDate": "→ Tiêm nhắc 1 liều (Td/Tdap) vào {{date}}",
       "tetBoosterNoDate": "→ Tiêm nhắc 1 liều (Td/Tdap)"
