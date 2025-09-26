@@ -1,9 +1,13 @@
 import React, { useState, useRef, useMemo, useEffect } from "react";
-import { useReactToPrint } from "react-to-print";
+import { printScheduleTable } from "../../utils/print";
 import Card from "../../components/Card";
 import KeyRow from "../../components/KeyRow";
 import { formatDateISO } from "../../utils/format";
 import { addDaysISO } from "../../utils/dates";
+
+// ---------- helpers: remove accidental curly braces from i18n ----------
+const stripCurlies = (s) => (typeof s === "string" ? s.replace(/[{}]/g, "") : s);
+const ttFactory = (tFn) => (key, params) => stripCurlies(tFn(key, params));
 
 // สร้างข้อความแผน tetanus จาก i18n (ใช้ code ถ้ามี ไม่งั้นเดาจากจำนวนเข็ม)
 function tetanusPlanText(t, tet) {
@@ -37,14 +41,14 @@ function Pill({ children, tone = "slate" }) {
   );
 }
 
-// ---------- pretty text (สำหรับคัดลอก/พิมพ์) ----------
+// ---------- pretty text (สำหรับคัดลอก/พิมพ์แบบข้อความ) ----------
 function buildPrettyText({
   t, lang, exposureCat, animalType, exposureDate,
   priorLabel, immunocompromised, rabiesDates,
   tetDoseLabel, tetRecentLabel, tetDates, decision, startDate
 }) {
   const d = (iso) => formatDateISO(iso, lang);
-  const safeLen = (x) => String(x ?? "").length; // กันพังถ้า key หาย
+  const safeLen = (x) => String(x ?? "").length;
   const lines = [];
 
   const hospTitle = t("sections.hospSummary");
@@ -102,6 +106,22 @@ function buildPrettyText({
   return lines.join("\n");
 }
 
+// ---------- Patient-facing summary helpers ----------
+function buildPatientBlocks({ lang, startDate, rabiesDates, tetDates }) {
+  const map = new Map();
+  rabiesDates.forEach((iso, idx) => {
+    if (!map.has(iso)) map.set(iso, []);
+    map.get(iso).push({ kind: "rabies", dose: idx + 1 });
+  });
+  tetDates.forEach((iso, idx) => {
+    if (!map.has(iso)) map.set(iso, []);
+    map.get(iso).push({ kind: "tetanus", dose: idx + 1 });
+  });
+  const days = Array.from(map.keys()).sort();
+  return { days, map };
+}
+
+// ---------- Component ----------
 export default function HospitalSummary({
   t, lang,
   exposureCat, animalType, exposureDate,
@@ -111,8 +131,10 @@ export default function HospitalSummary({
   tetanusDoses, tetanusRecent,
   decision, startDate, scheduleDates, summaryText,
 }) {
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [toast, setToast] = useState(null); // {text: string}
+
+  // i18n “brace-free” helper
+  const t2 = useMemo(() => ttFactory(t), [t]);
 
   // labels (แปลแล้ว มาจาก useOptions)
   const priorLabel = PRIOR_VAC.find((p) => p.id === priorVaccination)?.label || "-";
@@ -139,18 +161,23 @@ export default function HospitalSummary({
     ]
   );
 
-  // พิมพ์เฉพาะ <pre>
+  // โซนสำหรับพิมพ์ตารางนัด (ใช้กับ react-to-print)
   const printRef = useRef(null);
-
-  const handlePrint = useReactToPrint({
-    content: () => printRef.current,
-    documentTitle: t("sections.hospSummary"),
-    pageStyle: `
-      @page { margin: 16mm; }
-      body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-      pre { font-size: 14px; line-height: 1.7; }
-    `,
+ const handlePrint = React.useCallback(() => {
+  try {
+    if (typeof window !== "undefined" && typeof window.plausible === "function") {
+      window.plausible("print_schedule", { props: { section: "summary", lang } });
+    }
+  } catch {}
+  printScheduleTable({
+    t,
+    lang,
+    rabiesDates: scheduleDates || [],  // ใช้ชุดวันที่เดิมของคุณ
+    tetDates,                          // คำนวณจาก decision.tetanus + startDate ตามโค้ดคุณ
+    title: lang === "th" ? "ตารางฉีดวัคซีน" : "Vaccination Schedule"
   });
+}, [t, lang, scheduleDates, tetDates]);
+
 
   const copyToClipboard = async () => {
     try {
@@ -173,162 +200,211 @@ export default function HospitalSummary({
     return () => clearTimeout(id);
   }, [toast]);
 
-  const CardStructured = () => (
-    <div className="space-y-4">
-      <div className="space-y-1">
-        <div className="flex items-center gap-2">
-          <h3 className="font-semibold">🦠 {t("sections.planTitle")}</h3>
-          {exposureCat && (
-            <Pill tone={exposureCat === "1" ? "green" : exposureCat === "2" ? "amber" : "red"}>
-              {t("fields.group", { n: exposureCat })}
-            </Pill>
-          )}
+  // -------- Patient-facing subsection (multilang + brace-free) --------
+  const PatientSummary = () => {
+    if (exposureCat === "1") {
+      return (
+        <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-sm">
+          {t("messages.cat1NoPEP")}
         </div>
-        <KeyRow label={t("fields.animalType")} value={t(`animals.${animalType}`)} />
-        {exposureDate && <KeyRow label={t("fields.exposureDate")} value={formatDateISO(exposureDate, lang)} />}
-        <KeyRow label={t("fields.priorVac")} value={priorLabel} />
-        <KeyRow
-          label={t("fields.immunocomp")}
-          value={immunocompromised ? t("labels.immunocompYes") : t("labels.immunocompNo")}
-        />
+      );
+    }
 
-        {exposureCat === "1" ? (
-          <div className="mt-2 p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-sm">
-            {t("messages.cat1NoPEP")}
+    const { days, map } = buildPatientBlocks({ lang, startDate, rabiesDates, tetDates });
+    const d = (iso) => formatDateISO(iso, lang);
+
+    const totalRabies = rabiesDates.length;
+    const totalTet = tetDates.length;
+    const totalAll = totalRabies + totalTet;
+    const firstDate = startDate || days[0];
+
+    const splitShotsText =
+      totalRabies > 0 && totalTet > 0
+        ? t2("summary.patient.splitShotsBoth", { rabies: totalRabies, tetanus: totalTet })
+        : totalRabies > 0
+          ? t2("summary.patient.splitShotsRabiesOnly", { rabies: totalRabies })
+          : totalTet > 0
+            ? t2("summary.patient.splitShotsTetanusOnly", { tetanus: totalTet })
+            : "";
+
+    return (
+      <div className="space-y-3">
+        <p className="text-sm sm:text-base">
+          {t2("summary.patient.groupLine", { n: exposureCat || "-" })}{" "}
+          {firstDate ? t2("summary.patient.firstVisit", { date: d(firstDate) }) : null}{" "}
+          {totalAll > 0 ? t2("summary.patient.totalShots", { n: totalAll }) : null}{" "}
+          {splitShotsText}
+        </p>
+
+        <div className="mt-2">
+          <div className="text-sm font-medium mb-1">{t2("summary.patient.scheduleTitle")}</div>
+          <ul className="space-y-2">
+            {days.map((iso) => (
+              <li key={iso} className="p-3 rounded-lg border border-slate-200 bg-white">
+                <div className="font-semibold">{d(iso)}</div>
+                <ul className="list-disc ml-5 mt-1 text-sm">
+                  {map.get(iso).map((item, idx) => (
+                    <li key={idx}>
+                      {item.kind === "rabies"
+                        ? t2("summary.patient.rabiesDoseLine", { n: item.dose })
+                        : t2("summary.patient.tetanusDoseLine", { n: item.dose })}
+                    </li>
+                  ))}
+                </ul>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    );
+  };
+
+  // -------- Doctor-facing subsection (form, multilang + brace-free) --------
+  const DoctorSummaryForm = () => {
+    const d = (iso) => formatDateISO(iso, lang);
+    const regimenLabel = labelForRegimen(t, decision.regimen || decision.suggestedRegimen);
+
+    const rabiesLines = rabiesDates
+      .map((iso, i) => t2("summary.doctor.rabiesDoseLine", { n: i + 1, date: d(iso) }))
+      .join("\n");
+
+    const animalText = stripCurlies(t(`animals.${animalType}`));
+
+    const firstTet = tetDates && tetDates[0] ? d(tetDates[0]) : "";
+    const tetBoosterLine = firstTet
+      ? t2("summary.doctor.tetBoosterWithDate", { date: firstTet })
+      : t2("summary.doctor.tetBoosterNoDate");
+
+    return (
+      <div className="space-y-4 text-sm">
+        {/* ข้อมูลเบื้องต้น */}
+        <div>
+          <div className="text-base sm:text-lg font-bold mb-1">
+            {t2("summary.doctor.basicsTitle")}
           </div>
-        ) : (
-          <>
-            <p className="text-sm">
-              <span className="font-medium">{t("labels.plan")}:</span>{" "}
-              {labelForRegimen(t, decision.regimen || decision.suggestedRegimen)}
-            </p>
-            <p className="text-sm">
-              <span className="font-medium">{t("labels.rig")}:</span>{" "}
-              {decision.needRIG ? t("messages.rigYes") : t("messages.rigNo")}
-            </p>
-            {startDate && rabiesDates.length > 0 && (
-              <ul className="list-disc ml-5 text-sm mt-1">
-                {rabiesDates.map((d, i) => (
-                  <li key={i}>
-                    {t("labels.doseLine", { n: i + 1, date: formatDateISO(d, lang) })}
-                  </li>
-                ))}
-              </ul>
-            )}
-            {decision.stopNote && (
-              <div className="text-xs text-gray-600 mt-2">{t("messages.stopIfObs10d")}</div>
-            )}
-          </>
-        )}
-      </div>
-
-      <div className="space-y-1">
-        <div className="flex items-center gap-2">
-          <h3 className="font-semibold">💉 {t("sections.tetanusTitle")}</h3>
-          <Pill>{tetDoseLabel}</Pill>
-          {tetanusRecent && tetRecentLabel !== "-" && <Pill tone="amber">{tetRecentLabel}</Pill>}
+          <div className="whitespace-pre-wrap">
+            {[
+              t2("summary.doctor.catLine", { n: exposureCat || "-" }),
+              t2("summary.doctor.animalLine", { animal: animalText }),
+              exposureDate ? t2("summary.doctor.exposureDateLine", { date: d(exposureDate) }) : null,
+              t2("summary.doctor.priorLine", { prior: priorLabel }),
+              t2("summary.doctor.immLine", { imm: immunocompromised ? t("labels.immunocompYes") : t("labels.immunocompNo") }),
+            ].filter(Boolean).join("\n")}
+          </div>
         </div>
 
-        {decision.tetanus?.need ? (
-          <>
-            <p className="text-sm mt-1">{tetanusPlanText(t, decision.tetanus)}</p>
-            <ul className="list-disc ml-5 text-sm mt-1">
-              {tetDates.map((d, i) => (
-                <li key={i}>
-                  {t("labels.doseLine", { n: i + 1, date: formatDateISO(d, lang) })}
-                </li>
-              ))}
-            </ul>
-          </>
-        ) : (
-          <p className="text-sm mt-1">{tetanusPlanText(t, decision.tetanus)}</p>
-        )}
-      </div>
-    </div>
-  );
+        {/* แผนวัคซีนพิษสุนัขบ้า */}
+        <div>
+          <div className="text-base sm:text-lg font-bold mb-1">
+            {t2("summary.doctor.rabiesPlanTitle", { regimen: regimenLabel })}
+          </div>
+          <div className="whitespace-pre-wrap">{rabiesLines}</div>
+        </div>
 
+        {/* RIG */}
+        <div>
+          <div className="text-base sm:text-lg font-bold mb-1">{t2("summary.doctor.rigTitle")}</div>
+          <div>{decision.needRIG ? t2("summary.doctor.rigYes", { n: exposureCat || "-" }) : t2("summary.doctor.rigNo")}</div>
+        </div>
+
+        {/* Tetanus */}
+        <div>
+          <div className="text-base sm:text-lg font-bold mb-1">{t2("summary.doctor.tetanusTitle")}</div>
+          <div className="whitespace-pre-wrap">
+            {[
+              t2("summary.doctor.tetSeriesLine1"),
+              t2("summary.doctor.tetSeriesLine2"),
+              tetBoosterLine
+            ].join("\n")}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // ---------- UI ----------
   return (
     <>
-      {/* Card view */}
-      <Card title={t("sections.hospSummary")} icon="🧾">
-        <CardStructured />
-        <div className="flex items-center gap-3 mt-4">
-          <button
-            onClick={() => setIsModalOpen(true)}
-            className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 w-full"
+      {/* Card view: รวม 2 ซับเซคชันแบบ collapsible */}
+      <Card>
+        <div className="space-y-4">
+          {/* Patient collapsible */}
+          <details
+            className="group rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden"
+            open
           >
-            {t("ui.expandPrint")}
-          </button>
+            <summary
+              className="flex items-center justify-between cursor-pointer select-none px-4 py-3 sm:px-5 sm:py-4
+                         list-none [&::-webkit-details-marker]:hidden"
+              data-track-label="summary_patient_toggle"
+            >
+              <span className="text-lg sm:text-xl font-bold text-slate-800">
+                👤 {t("sections.patientSummary") || "สำหรับคนไข้"}
+              </span>
+              <svg
+                className="w-5 h-5 sm:w-6 sm:h-6 transition-transform duration-200 group-open:rotate-180 opacity-70"
+                viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"
+              >
+                <path d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 10.94l3.71-3.71a.75.75 0 1 1 1.06 1.06l-4.24 4.24a.75.75 0 0 1-1.06 0L5.21 8.29a.75.75 0 0 1 .02-1.08z"/>
+              </svg>
+            </summary>
+            <div className="border-t border-slate-200 bg-slate-50/60 group-open:bg-slate-50">
+              <div className="px-4 pb-4 sm:px-5 sm:pb-5">
+                <PatientSummary />
+              </div>
+            </div>
+          </details>
+
+          {/* Doctor collapsible */}
+          <details
+            className="group rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden"
+          >
+            <summary
+              className="flex items-center justify-between cursor-pointer select-none px-4 py-3 sm:px-5 sm:py-4
+                         list-none [&::-webkit-details-marker]:hidden"
+              data-track-label="summary_doctor_toggle"
+            >
+              <span className="text-lg sm:text-xl font-bold text-slate-800">
+                👨‍⚕️ {t("sections.doctorSummary") || "สำหรับแพทย์"}
+              </span>
+              <svg
+                className="w-5 h-5 sm:w-6 sm:h-6 transition-transform duration-200 group-open:rotate-180 opacity-70"
+                viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"
+              >
+                <path d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 10.94l3.71-3.71a.75.75 0 1 1 1.06 1.06l-4.24 4.24a.75.75 0 0 1-1.06 0L5.21 8.29a.75.75 0 0 1 .02-1.08z"/>
+              </svg>
+            </summary>
+            <div className="border-t border-slate-200 bg-slate-50/60 group-open:bg-slate-50">
+              <div className="px-4 pb-4 sm:px-5 sm:pb-5">
+                <DoctorSummaryForm />
+              </div>
+            </div>
+          </details>
+        </div>
+
+        {/* ปุ่มด้านล่าง: ไม่มี “ขยาย” อีกต่อไป เหลือแค่ปริ้น */}
+        <div className="flex items-center gap-3 mt-5">
+        <button
+  onClick={handlePrint}
+  className="px-4 py-2 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 w-full"
+  data-track-label="summary_print"
+  aria-label={(t("ui.printScheduleAria") || (lang === "th" ? "พิมพ์ตารางนัด" : "Print vaccination schedule"))}
+>
+  {t("ui.printSchedule") || (lang === "th" ? "พิมพ์ตารางนัด" : "Print schedule")}
+</button>
+
         </div>
       </Card>
 
-      {/* Modal */}
-      {isModalOpen && (
-        <div
-          className="fixed inset-0 bg-black/70 z-50 flex justify-center items-center p-4"
-          onClick={() => setIsModalOpen(false)}
-        >
-          <div
-            className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[92vh] flex flex-col"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Header */}
-            <div className="flex flex-wrap gap-3 justify-between items-center p-4 border-b">
-              <h2 className="text-lg font-bold">{t("sections.hospSummary")}</h2>
-              <div className="flex gap-2">
-                <button
-                  onClick={copyToClipboard}
-                  className="px-3 py-1.5 text-sm bg-slate-900 text-white rounded-lg hover:bg-slate-800"
-                >
-                  {t("ui.copy")}
-                </button>
-                <button
-                  onClick={handlePrint}
-                  className="px-3 py-1.5 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700"
-                >
-                  {t("ui.print")} 🖨️
-                </button>
-                <button
-                  onClick={() => setIsModalOpen(false)}
-                  className="px-3 py-1.5 text-sm bg-gray-200 rounded-lg hover:bg-gray-300"
-                >
-                  {t("ui.close")}
-                </button>
-              </div>
-            </div>
-
-            {/* Content */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 p-6 overflow-y-auto">
-              <div className="min-h-[300px]">
-                <div className="border rounded-xl p-4 shadow-sm">
-                  <CardStructured />
-                </div>
-              </div>
-
-              <div className="min-h-[300px] relative">
-                {/* ปุ่มคัดลอกซ้ำที่ลอยบนกล่อง */}
-                <button
-                  onClick={copyToClipboard}
-                  className="absolute top-3 right-3 px-2.5 py-1 text-xs bg-white/80 backdrop-blur border border-slate-200 rounded-md hover:bg-white shadow-sm"
-                  aria-label={t("ui.copy")}
-                >
-                  {t("ui.copy")}
-                </button>
-
-                <pre
-                  ref={printRef}
-                  className="w-full h-[520px] lg:h-[560px] overflow-auto rounded-2xl p-5 shadow-inner
-                             bg-gradient-to-br from-slate-50 via-white to-slate-50
-                             border border-slate-200
-                             text-[15px] leading-7 font-mono whitespace-pre-wrap text-slate-800"
-                >
-{prettyText}
-                </pre>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* พื้นที่ซ่อนสำหรับพิมพ์ตารางนัด */}
+      <PrintableSchedule
+        ref={printRef}
+        t={t2}
+        lang={lang}
+        startDate={startDate}
+        rabiesDates={rabiesDates}
+        tetDates={tetDates}
+      />
 
       {/* Toast */}
       {toast && (
@@ -341,3 +417,37 @@ export default function HospitalSummary({
     </>
   );
 }
+
+// ---------- Printable component (hidden on screen, visible on print) ----------
+const PrintableSchedule = React.forwardRef(function PrintableSchedule(props, ref) {
+  const { t, lang, startDate, rabiesDates = [], tetDates = [] } = props;
+  const d = (iso) => formatDateISO(iso, lang);
+
+  // สร้างบล็อกวัน/โดสเหมือนฝั่งผู้ป่วย
+  const { days, map } = buildPatientBlocks({ lang, startDate, rabiesDates, tetDates });
+
+  return (
+    <div ref={ref} className="hidden print:block">
+      <div style={{ padding: 20 }}>
+        <h1>{t("summary.patient.scheduleTitle")}</h1>
+        <div>
+          {days.length === 0 && <div>{t("labels.noSchedule") || "ไม่มีตารางนัด"}</div>}
+          {days.map((iso) => (
+            <div key={iso} style={{ marginBottom: 10 }}>
+              <h2>{d(iso)}</h2>
+              <ul>
+                {map.get(iso).map((item, idx) => (
+                  <li key={idx}>
+                    {item.kind === "rabies"
+                      ? t("summary.patient.rabiesDoseLine", { n: item.dose })
+                      : t("summary.patient.tetanusDoseLine", { n: item.dose })}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+});

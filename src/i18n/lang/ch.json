@@ -1,0 +1,198 @@
+{
+  "header": {
+    "subtitle": "评估风险，获取疫苗接种计划，并了解被咬/抓后的护理步骤。"
+  },
+  "ui": {
+    "language": "语言",
+    "thai": "泰语",
+    "english": "英语",
+    "vietnamese": "越南语",
+    "chinese":"中文",
+    "khmer": "高棉语",
+    "lao": "老挝语",
+    "myanmar": "缅甸语",
+    "japanese": "日语",
+    "next": "继续",
+    "copy": "复制文本",
+    "saveImage": "保存为图片",
+    "openMap": "打开地图查找附近诊所",
+    "tel1422": "拨打 1422（疾病控制部门）",
+    "downloadICS": "下载 .ics",
+    "openInGCal": "添加到日历",
+    "addToCalendar": "添加到日历",
+    "calendarSubtitle": "下载 .ics，然后用 Google 日历打开即可自动导入",
+    "gcalNote": "要一次性添加所有预约，请下载 .ics 并用 Google 日历打开。以下链接会逐个添加预约。",
+    "expandPrint": "展开以查看与打印 ↗️",
+    "print": "打印",
+    "close": "关闭",
+    "printSchedule": "打印日程",
+    "openForm": "打开表单"
+  },
+  "sections": {
+    "triageTitle": "分诊",
+    "triageSubtitle": "回答几个问题以获取与建议一致的指导",
+    "washTitle": "立即伤口处理",
+    "planTitle": "疫苗接种",
+    "calendarTitle": "预约助手（.ics）",
+    "hospSummary": "就诊摘要",
+    "patientSummary": "给患者",
+    "doctorSummary": "给医生",
+    "service": "地图 / 服务渠道",
+    "refs": "参考资料",
+    "tetanusTitle": "破伤风",
+    "summaryTitle": "摘要",
+    "feedback": "满意度调查 / 建议"
+  },
+  "feedback": {
+    "subtitle": "告诉我们这是否有帮助，或有哪些可以改进。"
+  },
+  "services": {
+    "reportWarning": "如果动物出现可疑症状，请通知畜牧部门或拨打热线 {phone}。"
+  },
+  "tetanus": {
+    "needYes": "⚠️ 需要接种破伤风疫苗",
+    "needNo": "✅ 无需接种破伤风疫苗",
+    "apptTitle": "破伤风预约",
+    "doseLine": "第 {n} 针 — {date}"
+  },
+  "wound": {
+    "title": "伤口急救步骤（有感染风险的伤口）",
+    "steps": [
+      "立即并持续冲洗（15 分钟）\n立刻用清洁的流动水冲洗伤口。\n使用肥皂多次反复清洗。\n确保清洗到伤口深处，至少 15 分钟。\n避免造成瘀伤：不要过度用力擦洗或按压。",
+      "使用消毒剂\n使用 Povidone Iodine（碘伏/贝他定）或 Chlorhexidine 再次清洁。\n若无，可用 70% 酒精代替。",
+      "就医\n即使已彻底清洗，仍需就医评估并根据需要进行进一步处理（如狂犬病疫苗或破伤风疫苗）。"
+    ]
+  },
+  "fields": {
+    "exposureType": "选择暴露类别",
+    "animalType": "动物类型",
+    "exposureDate": "暴露日期",
+    "startDay0": "开始接种（第 0 天）",
+    "today": "今天",
+    "yesterday": "昨天",
+    "tomorrow": "明天",
+    "pickDate": "选择日期",
+    "priorVac": "既往狂犬病疫苗史",
+    "immunocomp": "免疫功能低下",
+    "group": "类别 {n}",
+    "realAppt": "实际预约（开始于 {date}）",
+    "tetanusDoses": "既往破伤风接种剂次数",
+    "tetanusRecent": "距上次破伤风接种时间"
+  },
+  "exposures": {
+    "1": "类别 1：仅接触完整皮肤",
+    "2": "类别 2：轻微抓伤/擦伤",
+    "3": "类别 3：深伤、出血、唾液进入眼/口/伤口"
+  },
+  "obs10d": {
+    "yes": "动物可观察 10 天",
+    "no": "不可观察",
+    "unknown": "不确定"
+  },
+  "prior": {
+    "never": "从未完成既往系列",
+    "<=6m": "在 ≤6 个月内完成",
+    ">6m": "在 >6 个月前完成"
+  },
+  "tetanusDosesOptions": {
+    "0": "0 针（从未接种）",
+    "1": "1 针",
+    "2": "2 针",
+    "3": "≥3 针（已完成）"
+  },
+  "tetanusRecentOptions": {
+    "<=5y": "≤ 5 年",
+    ">5y": "> 5 年"
+  },
+  "messages": {
+    "cat1NoPEP": "类别 1 暴露：不需要疫苗和 RIG",
+    "warning": "警告：及时接种可 100% 预防狂犬病。一旦发病几乎必死。",
+    "needRIGTitle": "考虑 RIG（类别 3）",
+    "needRIGDetail": "与疫苗同日（第 0 天）对所有伤口进行浸润注射",
+    "rigYes": "建议（类别 3）",
+    "rigNo": "不需要",
+    "summaryPEPNo": "摘要：不需要 PEP",
+    "stopIfObs10d": "如果狗/猫在 10 天内保持健康，可考虑停止疗程。"
+  },
+  "labels": {
+    "realAppt": "实际预约（开始于 {date}）",
+    "plan": "接种计划",
+    "rig": "RIG",
+    "animalObs10d": "动物 10 天观察",
+    "immunocompYes": "是",
+    "immunocompNo": "否",
+    "chooseRegimen": "选择方案",
+    "dayLine": "第 {d} 天 — {date}",
+    "icsTitle": "狂犬病疫苗预约",
+    "doseTitle": "疫苗预约 — 第 {n} 针",
+    "tetanusPlan": "破伤风",
+    "doseLine": "第 {n} 针 — {date}",
+    "tetanusNone": "无需加强（5 年内已接种 ≥3 针）",
+    "tetanusBooster": "加强 1 针（Td/Tdap）",
+    "tetanusSeries": "开始 0、1、6 个月程序（Td/Tdap）"
+  },
+  "plan": {
+    "regimens": {
+      "IM_ESSEN": "肌注（Essen）5 针 — 日期 {days}",
+      "ID_TRC": "皮内（TRC）4 针 — 日期 {days}"
+    }
+  },
+  "rabies": {
+    "needYes": "⚠️ 建议接种狂犬病疫苗。",
+    "needNo": "✅ 无需接种狂犬病疫苗。"
+  },
+  "animals": {
+    "dog": "狗",
+    "cat": "猫",
+    "bat": "蝙蝠",
+    "monkey": "猴",
+    "non_mammal": "非哺乳动物",
+    "other": "其他哺乳动物，如猴、鼠、猪"
+  },
+  "summary": {
+    "patient": {
+      "groupLine": "您属于类别 {{n}}",
+      "firstVisit": "您的首次接种时间：{{date}}",
+      "totalShots": "共 {{n}} 针",
+      "splitShotsBoth": "（狂犬病 {{rabies}} 针 + 破伤风 {{tetanus}} 针）",
+      "splitShotsRabiesOnly": "（狂犬病 {{rabies}} 针）",
+      "splitShotsTetanusOnly": "（破伤风 {{tetanus}} 针）",
+      "scheduleTitle": "📅 接种日程",
+      "rabiesDoseLine": "狂犬病疫苗 第 {{n}} 针",
+      "tetanusDoseLine": "破伤风疫苗 第 {{n}} 针"
+    },
+    "doctor": {
+      "basicsTitle": "📋 基本信息",
+      "catLine": "• WHO 类别：{{n}}",
+      "animalLine": "• 动物：{{animal}}",
+      "exposureDateLine": "• 暴露日期：{{date}}",
+      "priorLine": "• 狂犬病疫苗史：{{prior}}",
+      "immLine": "• 免疫低下：{{imm}}",
+      "rabiesPlanTitle": "🦠 狂犬病疫苗计划（{{regimen}}）",
+      "rabiesDoseLine": "- 第 {{n}} 针 — {{date}}",
+      "rigTitle": "💉 RIG：",
+      "rigYes": "建议（类别 {{n}}）",
+      "rigNo": "不建议",
+      "tetanusTitle": "💉 破伤风疫苗",
+      "tetSeriesLine1": "- 已完成 ≥3 针",
+      "tetSeriesLine2": "- 上次接种 >5 年",
+      "tetBoosterWithDate": "→ 加强 1 针（Td/Tdap），时间 {{date}}",
+      "tetBoosterNoDate": "→ 加强 1 针（Td/Tdap）"
+    }},
+    "print": {
+      "schedule": {
+        "title": "接种日程表",
+        "date": "日期",
+        "typeDose": "疫苗种类-剂次",
+        "brand": "品牌/Lot.no.",
+        "hospital": "医院",
+        "signature": "签名",
+        "noRows": "无预约"
+      }
+    },
+    
+  "refs": {
+    "thaiRedCross": "泰国红十字会 Queen Saovabha 研究所：狂犬病暴露管理指南（2018）",
+    "defaultLabel": "下载"
+  }
+}

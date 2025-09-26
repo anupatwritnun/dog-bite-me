@@ -1,16 +1,11 @@
 import React, { useState } from "react";
 
-/**
- * ImageRadioGrid
- * props:
- *  - name, value, onChange
- *  - options: [{ id, label, img?: string | string[] }]
- */
-export default function ImageRadioGrid({ name, value, onChange, options = [] }) {
+/* Named declaration so we can export both default and named */
+function ImageRadioGrid({ name, value, onChange, options = [] }) {
   if (!Array.isArray(options) || options.length === 0) return null;
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 items-stretch">
       {options.map((opt) => (
         <ImageRadioCard
           key={opt.id}
@@ -27,25 +22,26 @@ export default function ImageRadioGrid({ name, value, onChange, options = [] }) 
 
 function ImageRadioCard({ name, active, label, images, onSelect }) {
   const [idx, setIdx] = useState(0);
+  const [imgError, setImgError] = useState(false);
   const hasImgs = images && images.length > 0;
   const showDots = images.length > 1;
 
   return (
     <label
-      className={`relative block rounded-3xl overflow-hidden border transition-all cursor-pointer
+      onClick={onSelect}
+      className={`relative block h-full rounded-3xl overflow-hidden border bg-white transition-all cursor-pointer
         ${active ? "border-slate-900 ring-2 ring-slate-900 shadow-xl" : "border-slate-200 hover:border-slate-300 shadow-sm"}
       `}
-      onClick={onSelect}
     >
-      {/* image area */}
-      <div className="relative w-full h-56 sm:h-64 bg-slate-50">
-        {hasImgs ? (
+      {/* image area: white background; image is block to kill baseline gap */}
+      <div className="relative w-full h-56 sm:h-64 bg-white grid place-items-center">
+        {hasImgs && !imgError ? (
           <img
             src={images[idx]}
             alt={label}
-            className="w-full h-full object-cover"
+            className="block max-h-full max-w-full object-contain"
             loading="lazy"
-            onError={(e) => (e.currentTarget.style.display = "none")}
+            onError={() => setImgError(true)}
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-slate-400 text-sm">
@@ -54,7 +50,7 @@ function ImageRadioCard({ name, active, label, images, onSelect }) {
         )}
 
         {/* dots pager */}
-        {showDots && (
+        {showDots && !imgError && (
           <div className="absolute inset-x-0 bottom-2 flex items-center justify-center gap-2">
             {images.map((_, i) => (
               <button
@@ -63,6 +59,7 @@ function ImageRadioCard({ name, active, label, images, onSelect }) {
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
+                  setImgError(false);
                   setIdx(i);
                 }}
                 className={`h-2.5 w-2.5 rounded-full border ${
@@ -75,13 +72,13 @@ function ImageRadioCard({ name, active, label, images, onSelect }) {
         )}
       </div>
 
-      {/* label bar */}
-      <div className="relative bg-white px-4 py-3">
-        <div className="pr-8 text-[15px] font-medium text-slate-800 leading-snug">{label}</div>
-
-        {/* custom radio mark bottom-right */}
+      {/* label bar: pulled up slightly to cover any seam */}
+      <div className="relative bg-white px-4 py-3 min-h-14 -mt-[3px]">
+        <div className="pr-10 text-[15px] font-medium text-slate-800 leading-snug break-words">
+          {label}
+        </div>
         <span
-          className={`absolute right-3 bottom-3 h-5 w-5 rounded-full border grid place-items-center
+          className={`absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 rounded-full border grid place-items-center
             ${active ? "border-slate-900" : "border-slate-300"}
           `}
         >
@@ -89,8 +86,18 @@ function ImageRadioCard({ name, active, label, images, onSelect }) {
         </span>
       </div>
 
-      {/* real radio (hidden but accessible) */}
-      <input type="radio" name={name} checked={active} onChange={() => {}} className="sr-only" />
+      {/* real radio (hidden) */}
+      <input
+        type="radio"
+        name={name}
+        checked={active}
+        readOnly
+        className="sr-only"
+      />
     </label>
   );
 }
+
+/* Exports: default + named to satisfy any import style */
+export default ImageRadioGrid;
+export { ImageRadioGrid };

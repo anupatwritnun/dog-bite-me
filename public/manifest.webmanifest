@@ -1,0 +1,14 @@
+{
+  "name": "Dog Bite PEP Checker",
+  "short_name": "PEP Checker",
+  "description": "ช่วยประเมินความเสี่ยง วางแผนวัคซีน และขั้นตอนดูแลเมื่อถูกสัตว์กัด/ข่วน",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0ea5e9",
+  "icons": [
+    { "src": "/logo.jpg", "sizes": "192x192", "type": "image/jpeg", "purpose": "any" },
+    { "src": "/logo.jpg", "sizes": "512x512", "type": "image/jpeg", "purpose": "any" }
+  ]
+}

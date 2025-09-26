@@ -7,7 +7,7 @@ export default function Header() {
 
   return (
     <header className="w-full pt-8 pb-6">
-      {/* top row: language on the right */}
+      {/* language selector top-right */}
       <div className="flex items-start justify-end">
         <select
           value={lang}
@@ -21,6 +21,8 @@ export default function Header() {
           <option value="km">{t("ui.khmer")}</option>
           <option value="lo">{t("ui.lao")}</option>
           <option value="my">{t("ui.myanmar")}</option>
+           <option value="ja">{t("ui.japanese")}</option>
+           <option value="ch">{t("ui.chinese")}</option>
         </select>
       </div>
 
@@ -32,6 +34,7 @@ export default function Header() {
             Dog Bite Me!
           </h1>
         </div>
+
         <p className="mt-2 text-slate-600">
           {t("header.subtitle") ||
             "ช่วยประเมินความเสี่ยง วางแผนวัคซีน และขั้นตอนดูแลเมื่อถูกสัตว์กัด/ข่วน"}

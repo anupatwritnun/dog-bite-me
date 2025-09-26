@@ -16,23 +16,20 @@ const DICTS = Object.fromEntries(
   })
 );
 
-// If you only shipped en/th/my for now, SUPPORTED_LOCALES will be ["en","th","my"].
-// Add more JSONs later and they appear automatically.
 export const SUPPORTED_LOCALES = Object.keys(DICTS);
 
-// ------------ keep your old option IDs (so imports elsewhere don't break) ------------
+// ------------ keep old option IDs ------------
 export const EXPO_IDS = ["1", "2", "3"];
 export const OBS_IDS = ["yes", "no", "unknown"];
 export const PRIOR_IDS = ["never", "<=6m", ">6m"];
-export const TETANUS_DOSE_IDS = ["0", "1", "2", "3"]; // ห้าม ">=3"
-export const TETANUS_RECENT_IDS = ["<=5y", ">5y"];     // last booster timing
-
+export const TETANUS_DOSE_IDS = ["0", "1", "2", "3"];
+export const TETANUS_RECENT_IDS = ["<=5y", ">5y"];
 
 // ------------ helpers ------------
 function normalizeLocale(code) {
   if (!code) return "en";
   const base = String(code).toLowerCase().split("-")[0];
-  return SUPPORTED_LOCALES.includes(base) ? base : "en";
+  return SUPPORTED_LOCALES.includes(base) ? base : "th";
 }
 
 function deepGet(obj, path) {
@@ -62,7 +59,6 @@ export function mapOptions(ids, baseKey, t) {
 const I18nContext = createContext(null);
 
 export function I18nProvider({ children }) {
-  // priority: ?lang= > localStorage > navigator.language
   const urlLang = new URLSearchParams(window.location.search).get("lang");
   const initial = normalizeLocale(
     urlLang || localStorage.getItem("locale") || navigator.language
@@ -84,12 +80,10 @@ export function I18nProvider({ children }) {
     [dict]
   );
 
-  // dev-only warning for missing keys
   const t = useCallback(
     (key, vars) => {
       const out = tBase(key, vars);
       if (import.meta.env.DEV && out === key) {
-        // eslint-disable-next-line no-console
         console.warn(`[i18n] Missing key: ${key} (lang=${lang})`);
       }
       return out;
@@ -97,7 +91,23 @@ export function I18nProvider({ children }) {
     [tBase, lang]
   );
 
-  const value = useMemo(() => ({ lang, setLang, t }), [lang, t]);
+  // -------- language meta helper --------
+  const getLangMeta = useCallback(
+    (code) => {
+      const key = `common.languages.${code}`;
+      const name = deepGet(dict, `${key}.name`) ?? code;
+      const country = deepGet(dict, `${key}.country`) ?? "";
+      const flag = deepGet(dict, `${key}.flag`) ?? "🌐";
+      return { code, name, country, flag };
+    },
+    [dict]
+  );
+
+  const value = useMemo(
+    () => ({ lang, setLang, t, getLangMeta }),
+    [lang, t, getLangMeta]
+  );
+
   return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
 }
 

@@ -1,0 +1,198 @@
+{
+  "header": {
+    "subtitle": "リスクを評価し、咬傷/ひっかき後のワクチンプランとケア手順を確認します。"
+  },
+  "ui": {
+    "language": "言語",
+    "thai": "タイ語",
+    "chinese":"Chinese",
+    "english": "英語",
+    "vietnamese": "ベトナム語",
+    "khmer": "クメール語",
+    "lao": "ラオス語",
+    "myanmar": "ミャンマー語",
+    "japanese": "日本語",
+    "next": "続行",
+    "copy": "テキストをコピー",
+    "saveImage": "画像として保存",
+    "openMap": "近くのクリニックを地図で開く",
+    "tel1422": "1422 に電話（疾病管理局）",
+    "downloadICS": ".ics をダウンロード",
+    "openInGCal": "カレンダーに追加",
+    "addToCalendar": "カレンダーに追加",
+    "calendarSubtitle": ".ics をダウンロードして Google カレンダーで開くと自動インポートされます",
+    "gcalNote": "すべての予約を一度に追加するには .ics をダウンロードして Google カレンダーで開いてください。以下のリンクは予約を一件ずつ追加します。",
+    "expandPrint": "表示を拡大して印刷 ↗️",
+    "print": "印刷",
+    "close": "閉じる",
+    "printSchedule": "スケジュールを印刷",
+    "openForm": "フォームを開く"
+  },
+  "sections": {
+    "triageTitle": "トリアージ",
+    "triageSubtitle": "いくつかの質問に答えて推奨に沿った指針を受け取ります",
+    "washTitle": "創傷の応急処置",
+    "planTitle": "ワクチン",
+    "calendarTitle": "予約ヘルパー（.ics）",
+    "hospSummary": "受診用サマリー",
+    "patientSummary": "患者向け",
+    "doctorSummary": "医師向け",
+    "service": "地図 / サービス窓口",
+    "refs": "参考資料",
+    "tetanusTitle": "破傷風",
+    "summaryTitle": "サマリー",
+    "feedback": "満足度調査 / 提案"
+  },
+  "feedback": {
+    "subtitle": "役に立ったか、改善点があれば教えてください。"
+  },
+  "services": {
+    "reportWarning": "動物に疑わしい症状があれば、家畜担当者に連絡するか {phone} に電話してください。"
+  },
+  "tetanus": {
+    "needYes": "⚠️ 破傷風ワクチンが必要",
+    "needNo": "✅ 破傷風ワクチンは不要",
+    "apptTitle": "破傷風の予約",
+    "doseLine": "第 {n} 回 — {date}"
+  },
+  "wound": {
+    "title": "創傷の応急手当（感染リスクのある創）",
+    "steps": [
+      "直ちに連続して洗浄（15分）\n清潔な流水ですぐに洗います。\n石けんを用いて何度も繰り返し擦り洗いします。\n創の奥まで十分に、少なくとも15分間洗浄します。\n打撲を避けるため、強く擦りすぎたり過度な圧をかけないでください。",
+      "消毒剤を使用\nPovidone Iodine（ベタジン）や Chlorhexidine などで再度消毒します。\nなければ 70% アルコールを代用します。",
+      "医師受診\n十分に洗浄しても、評価と必要な追加治療（例：狂犬病ワクチン、破傷風ワクチン）のため必ず受診してください。"
+    ]
+  },
+  "fields": {
+    "exposureType": "暴露カテゴリーを選択",
+    "animalType": "動物の種類",
+    "exposureDate": "暴露日",
+    "startDay0": "接種開始（Day 0）",
+    "today": "今日",
+    "yesterday": "昨日",
+    "tomorrow": "明日",
+    "pickDate": "日付を選択",
+    "priorVac": "狂犬病ワクチン歴",
+    "immunocomp": "免疫不全",
+    "group": "カテゴリ {n}",
+    "realAppt": "実際の予約（開始 {{date}}）",
+    "tetanusDoses": "過去の破傷風接種回数",
+    "tetanusRecent": "直近の破傷風接種からの期間"
+  },
+  "exposures": {
+    "1": "カテゴリ1：健常皮膚への接触のみ",
+    "2": "カテゴリ2：軽微な擦過傷・表在創",
+    "3": "カテゴリ3：深い創・出血・唾液が眼/口/創に入る"
+  },
+  "obs10d": {
+    "yes": "動物を10日間観察できる",
+    "no": "観察できない",
+    "unknown": "不明"
+  },
+  "prior": {
+    "never": "過去のシリーズを完了していない",
+    "<=6m": "≤6か月以内に完了",
+    ">6m": "6か月超で完了"
+  },
+  "tetanusDosesOptions": {
+    "0": "0回（未接種）",
+    "1": "1回",
+    "2": "2回",
+    "3": "3回以上（完了）"
+  },
+  "tetanusRecentOptions": {
+    "<=5y": "5年以内",
+    ">5y": "5年以上"
+  },
+  "messages": {
+    "cat1NoPEP": "カテゴリ1：ワクチンとRIGは不要",
+    "warning": "警告：適時の接種で狂犬病は100%予防可能。発症後はほぼ致死的です。",
+    "needRIGTitle": "RIGを検討（カテゴリ3）",
+    "needRIGDetail": "ワクチン接種と同日（Day 0）に全創部へ浸潤投与",
+    "rigYes": "推奨（カテゴリ3）",
+    "rigNo": "不要",
+    "summaryPEPNo": "サマリー：PEP不要",
+    "stopIfObs10d": "犬/猫が10日間健康であれば、コース中止を考慮可。"
+  },
+  "labels": {
+    "realAppt": "実際の予約（開始 {date}）",
+    "plan": "ワクチンプラン",
+    "rig": "RIG",
+    "animalObs10d": "動物の10日観察",
+    "immunocompYes": "はい",
+    "immunocompNo": "いいえ",
+    "chooseRegimen": "レジメンを選択",
+    "dayLine": "Day {d} — {date}",
+    "icsTitle": "狂犬病ワクチンの予約",
+    "doseTitle": "ワクチン予約 — 第 {n} 回",
+    "tetanusPlan": "破傷風",
+    "doseLine": "第 {n} 回 — {date}",
+    "tetanusNone": "追加接種不要（5年以内に3回以上）",
+    "tetanusBooster": "追加接種 1 回（Td/Tdap）",
+    "tetanusSeries": "0, 1, 6か月で開始（Td/Tdap）"
+  },
+  "plan": {
+    "regimens": {
+      "IM_ESSEN": "筋注（Essen）5回法 — 日程 {days}",
+      "ID_TRC": "皮内（TRC）4回法 — 日程 {days}"
+    }
+  },
+  "rabies": {
+    "needYes": "⚠️ 狂犬病ワクチン接種を推奨します。",
+    "needNo": "✅ 狂犬病ワクチンは不要です。"
+  },
+  "animals": {
+    "dog": "犬",
+    "cat": "猫",
+    "bat": "コウモリ",
+    "monkey": "サル",
+    "non_mammal": "哺乳類以外",
+    "other": "その他の哺乳類（例：サル、ネズミ、ブタ）"
+  },
+  "summary": {
+    "patient": {
+      "groupLine": "あなたはカテゴリ{{n}}です",
+      "firstVisit": "初回接種は{{date}}です",
+      "totalShots": "合計{{n}}回接種",
+      "splitShotsBoth": "（狂犬病 {{rabies}} 回 + 破傷風 {{tetanus}} 回）",
+      "splitShotsRabiesOnly": "（狂犬病 {{rabies}} 回）",
+      "splitShotsTetanusOnly": "（破傷風 {{tetanus}} 回）",
+      "scheduleTitle": "📅 予防接種スケジュール",
+      "rabiesDoseLine": "狂犬病ワクチン 第{{n}}回",
+      "tetanusDoseLine": "破傷風ワクチン 第{{n}}回"
+    },
+    "doctor": {
+      "basicsTitle": "📋 基本情報",
+      "catLine": "• WHO分類: {{n}}",
+      "animalLine": "• 動物: {{animal}}",
+      "exposureDateLine": "• 暴露日: {{date}}",
+      "priorLine": "• 狂犬病ワクチン歴: {{prior}}",
+      "immLine": "• 免疫不全: {{imm}}",
+      "rabiesPlanTitle": "🦠 狂犬病ワクチン計画（{{regimen}}）",
+      "rabiesDoseLine": "- 第{{n}}回 — {{date}}",
+      "rigTitle": "💉 RIG:",
+      "rigYes": "推奨（カテゴリ{{n}}）",
+      "rigNo": "非推奨",
+      "tetanusTitle": "💉 破傷風ワクチン",
+      "tetSeriesLine1": "- 3回以上完了",
+      "tetSeriesLine2": "- 最終接種 > 5年",
+      "tetBoosterWithDate": "→ 追加接種1回（Td/Tdap）{{date}}に",
+      "tetBoosterNoDate": "→ 追加接種1回（Td/Tdap）"
+    }},
+    "print": {
+      "schedule": {
+        "title": "予防接種スケジュール",
+        "date": "日付",
+        "typeDose": "ワクチン種別-回数",
+        "brand": "銘柄/Lot.no.",
+        "hospital": "医療機関",
+        "signature": "署名",
+        "noRows": "予約なし"
+      }
+    },
+   
+  "refs": {
+    "thaiRedCross": "Queen Saovabha Memorial Institute（タイ赤十字）. 狂犬病曝露管理ガイドライン（2018）",
+    "defaultLabel": "ダウンロード"
+  }
+}

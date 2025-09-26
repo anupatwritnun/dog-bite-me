@@ -1,5 +1,62 @@
 import { REGIMENS } from "../utils/animal";
 
+// ---------- Helper: Tetanus decision ----------
+function computeTetanusPlan(doses, recent) {
+  // ทำให้ค่าที่รับมาสะอาดก่อนเทียบ
+  const norm = (v) => String(v ?? "").toLowerCase().replace(/\s+/g, "");
+
+  const d = norm(doses);   // "0","1","2",">=3","≥3"
+  const r = norm(recent);  // "<=5y","≤5y",">5y"
+
+  // แปลงเป็นค่ามาตรฐาน
+  const dosesN =
+    d === ">=3" || d === "≥3" ? 3 :
+    Number.isFinite(Number(d)) ? Number(d) : 0;
+
+  const recentOver5 =
+    r === ">5y" || r === ">5yr" || r === ">5years" || r === "gt5y";
+
+  const recentWithin5 =
+    r === "<=5y" || r === "≤5y" || r === "le5y";
+
+  // ตัดสินใจ
+  if (dosesN < 3) {
+    return {
+      need: true,
+      code: "SERIES",
+      label: "ฉีดบาดทะยัก 3 เข็ม (Td/Tdap) — Day 0, 1 เดือน, 6 เดือน",
+      offsets: [0, 30, 180],
+    };
+  }
+
+  // ครบ ≥3 เข็มแล้ว
+  if (recentOver5) {
+    return {
+      need: true,
+      code: "BOOSTER",
+      label: "ฉีดบาดทะยักกระตุ้น 1 เข็ม (Td/Tdap)",
+      offsets: [0],
+    };
+  }
+
+  if (recentWithin5) {
+    return {
+      need: false,
+      code: "NONE",
+      label: "ไม่จำเป็นต้องฉีดบาดทะยักเพิ่ม (ครบ ≥ 3 เข็ม และภายใน 5 ปี)",
+      offsets: [],
+    };
+  }
+
+  return {
+    need: false,
+    code: "UNKNOWN",
+    label: "กรุณาระบุช่วงเวลาการฉีดเข็มล่าสุด",
+    offsets: [],
+  };
+}
+
+// ---------- Main function ----------
 export function decide(state) {
   const out = {
     category: state.exposureCat,
@@ -45,42 +102,7 @@ export function decide(state) {
   }
 
   // ---------- Tetanus ----------
-  const doses = state.tetanusDoses;   // "0" | "1" | "2" | ">=3"
-  const recent = state.tetanusRecent; // "<=5y" | ">5y" (use only when doses === ">=3")
-
-  if (doses === "0" || doses === "1" || doses === "2") {
-    out.tetanus = {
-      need: true,
-      label: "ฉีดบาดทะยัก 3 เข็ม (Td/Tdap) — Day 0, 1 เดือน, 6 เดือน",
-      offsets: [0, 30, 180],
-    };
-  } else if (doses === ">=3") {
-    if (recent === ">5y") {
-      out.tetanus = {
-        need: true,
-        label: "ฉีดบาดทะยักกระตุ้น 1 เข็ม (Td/Tdap)",
-        offsets: [0],
-      };
-    } else if (recent === "<=5y") {
-      out.tetanus = {
-        need: false,
-        label: "ไม่จำเป็นต้องฉีดบาดทะยักเพิ่ม (ครบ ≥ 3 เข็ม และภายใน 5 ปี)",
-        offsets: [],
-      };
-    } else {
-      out.tetanus = {
-        need: false,
-        label: "กรุณาระบุช่วงเวลาการฉีดเข็มล่าสุด",
-        offsets: [],
-      };
-    }
-  } else {
-    out.tetanus = {
-      need: false,
-      label: "ข้อมูลประวัติบาดทะยักไม่ครบ",
-      offsets: [],
-    };
-  }
+  out.tetanus = computeTetanusPlan(state.tetanusDoses, state.tetanusRecent);
 
   return out;
 }

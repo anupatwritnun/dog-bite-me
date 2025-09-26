@@ -9,7 +9,9 @@
     "vietnamese": "Tiếng Việt",
     "khmer": "Khmer",
     "lao": "Lao",
+    "chinese":"Chinese",
     "myanmar": "Myanmar",
+    "japanese": "Japanese",
     "next": "Continue",
     "copy": "Copy text",
     "saveImage": "Save as image",
@@ -23,6 +25,7 @@
     , "expandPrint": "Expand to view & print ↗️",
     "print": "Print",
     "close": "Close",
+    "printSchedule": "Print schedule",
     "openForm": "Open form"
   },
   "sections": {
@@ -32,9 +35,12 @@
     "planTitle": "Vaccination",
     "calendarTitle": "Appointment Helper (.ics)",
     "hospSummary": "Summary for doctor visit",
+     "patientSummary": "For Patient",
+    "doctorSummary": "For Doctor",
     "service": "Map / Service Channels",
-    "refs": "References (brief)",
+    "refs": "References",
     "tetanusTitle": "Tetanus",
+    "summaryTitle" : "Summary",
     "feedback": "Satisfaction survey / suggestions"
   },
   "feedback": {
@@ -52,10 +58,14 @@
   },
 
   "wound": {
-    "text": "Wash the wound thoroughly with soap and running water for at least 15 minutes. Clean, apply antiseptic, and see a clinician for vaccination as needed.",
-    "openFull": "Open full image",
-    "download": "Download image"
-  },
+  "title": "First Aid Steps for Wounds (Infection-risk wounds)",
+  "steps": [
+    "Immediate and continuous washing (15 minutes)\nWash the wound immediately with clean running water.\nUse soap and scrub repeatedly several times.\nEnsure washing reaches deep into the wound, at least 15 full minutes.\nAvoid causing bruising: do not scrub too hard or apply excessive pressure.",
+    "Apply antiseptic\nClean the wound again using an antiseptic solution such as Povidone Iodine (Betadine) or Chlorhexidine.\nIf no antiseptic is available, use 70% alcohol as an alternative.",
+    "See a doctor\nEven after thorough cleaning, you must see a doctor for assessment and additional treatment if needed (e.g., rabies vaccine or tetanus vaccine)."
+  ]
+}
+,
 
   "fields": {
     "exposureType": "Choose exposure category",
@@ -147,9 +157,58 @@
     "non_mammal": "Non-mammal",
     "other": "Other mammals e.g. monkey, rat, pig"
   },
-  "refs": {
-    "thaiRedCross": "Queen Saovabha Memorial Institute (Thai Red Cross). Rabies exposure management guideline (2018)",
-    "who": "WHO Exposure Categories I/II/III",
-    "tetanusThai": "≥3 prior doses within 5 years → none; >5 years → single booster; <3 doses → 0-1-6 series"
+  
+  "summary": {
+    "patient": {
+      "groupLine": "You are in Category {{n}}",
+      "firstVisit": "Your first vaccination visit is on {{date}}",
+      "totalShots": "Total {{n}} doses",
+      "splitShotsBoth": "(Rabies {{rabies}} + Tetanus {{tetanus}})",
+      "splitShotsRabiesOnly": "(Rabies {{rabies}})",
+      "splitShotsTetanusOnly": "(Tetanus {{tetanus}})",
+      "scheduleTitle": "📅 Vaccination schedule",
+      "rabiesDoseLine": "Rabies vaccine dose {{n}}",
+      "tetanusDoseLine": "Tetanus vaccine dose {{n}}"
+    },
+    "doctor": {
+      "basicsTitle": "📋 Basics",
+      "catLine": "• WHO Category: {{n}}",
+      "animalLine": "• Animal: {{animal}}",
+      "exposureDateLine": "• Exposure date: {{date}}",
+      "priorLine": "• Rabies vaccine history: {{prior}}",
+      "immLine": "• Immunocompromised: {{imm}}",
+      "rabiesPlanTitle": "🦠 Rabies vaccine plan ({{regimen}})",
+      "rabiesDoseLine": "- Dose {{n}} — {{date}}",
+      "rigTitle": "💉 RIG:",
+      "rigYes": "Recommended (Category {{n}})",
+      "rigNo": "Not recommended",
+      "tetanusTitle": "💉 Tetanus vaccine",
+      "tetSeriesLine1": "- Completed ≥ 3 doses",
+      "tetSeriesLine2": "- Last dose > 5 years",
+      "tetBoosterWithDate": "→ Booster 1 dose (Td/Tdap) on {{date}}",
+      "tetBoosterNoDate": "→ Booster 1 dose (Td/Tdap)"
+    },
+  "print": {
+    "schedule": {
+      "title": "Vaccination Schedule",
+      "date": "Date",
+      "typeDose": "Vaccine Type-Dose",
+      "brand": "Brand",
+      "hospital": "Hospital",
+      "signature": "Signature",
+      "noRows": "No appointments"
+    }
+  },
+  "summary": {
+    "patient": {
+      "rabiesDoseLine": "Rabies vaccine dose {{n}}",
+      "tetanusDoseLine": "Tetanus vaccine dose {{n}}"
+    }
   }
+},
+  "refs": {
+    "thaiRedCross": "Queen Saovabha Memorial Institute (Thai Red Cross). Rabies exposure management guideline (2018)"
+    ,"defaultLabel" :"Download"
+  }
+
 }
