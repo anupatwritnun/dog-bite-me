@@ -133,6 +133,8 @@
   },
   "plan": {
     "regimens": {
+      "BOOSTER_1": "Booster 1 dose (≤ 6 months) ", 
+    "BOOSTER_2": "Booster 2 doses (> 6 months) ",
       "IM_ESSEN": "Tiêm bắp (Essen) 5 liều — các ngày {days}",
       "ID_TRC": "Tiêm trong da (TRC) 4 liều — các ngày {days}"
     }

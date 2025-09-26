@@ -133,6 +133,8 @@
   },
   "plan": {
     "regimens": {
+      "BOOSTER_1": "Booster 1 dose (≤ 6 months) ", 
+    "BOOSTER_2": "Booster 2 doses (> 6 months) ",
       "IM_ESSEN": "肌注（Essen）5 针 — 日期 {days}",
       "ID_TRC": "皮内（TRC）4 针 — 日期 {days}"
     }

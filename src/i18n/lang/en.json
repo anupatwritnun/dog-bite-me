@@ -140,6 +140,8 @@
 
   "plan": {
     "regimens": {
+      "BOOSTER_1": "Booster 1 dose (≤ 6 months) ", 
+    "BOOSTER_2": "Booster 2 doses (> 6 months) ",
       "IM_ESSEN": "IM (Essen) 5-dose — days {days}",
       "ID_TRC": "ID (TRC) 4-dose — days {days}"
     }
